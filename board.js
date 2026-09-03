@@ -43,7 +43,7 @@ function evaluateMatch(){
         // global ya haya vuelto a PLAYER_TURN_IDLE.
         boardLocked=false;
         if(setState(GameState.ENEMY_TURN)){
-          setCombatMessage("👹 El enemigo ataca…");
+          setCombatMessage("👹 TURNO DEL ENEMIGO");
           enemyAttack();
         }else{
           // Recuperación de seguridad ante cualquier estado inesperado.

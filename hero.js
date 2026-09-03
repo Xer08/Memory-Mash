@@ -1,10 +1,10 @@
 let currentHeroClass=null;
 let activeRelics=[];
 const heroClasses={
-  warrior:{name:"Guerrero",icon:"⚔️",maxHealth:140,attack:22,maxMana:60,ability:"Contraataque",abilityIcon:"↩️",abilityCost:5,
+  warrior:{name:"Guerrero",icon:"⚔️",maxHealth:140,attack:22,maxMana:40,ability:"Contraataque",abilityIcon:"↩️",abilityCost:5,
     chargedAbility:"Golpe Crítico",chargedAbilityIcon:"⚡",criticalMultiplier:2.5,
     description:"El más resistente y poderoso. Su pasiva Contraataque consume 5 MP al recibir daño y devuelve el 20% del daño recibido. Su Carga al 100% permite ejecutar un Golpe Crítico."},
-  mage:{name:"Mago",icon:"🔮",maxHealth:90,attack:18,maxMana:60,ability:"Visión Arcana",abilityIcon:"👁️",abilityCost:20,
+  mage:{name:"Mago",icon:"🔮",maxHealth:90,attack:18,maxMana:100,ability:"Visión Arcana",abilityIcon:"👁️",abilityCost:20,
     chargedAbility:"Congelación Arcana",chargedAbilityIcon:"❄️",chargedDamage:30,
     description:"Controla el campo. Gasta 20 MP para revelar 2 cartas durante 1 segundo. Su Carga al 100% lanza Congelación Arcana: daña y hace perder un turno al enemigo."},
   rogue:{name:"Pícaro",icon:"🗡️",maxHealth:100,attack:17,maxMana:60,ability:"Cuchilla",abilityIcon:"🗡️",abilityCost:10,abilityDamage:10,

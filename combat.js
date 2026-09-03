@@ -69,7 +69,7 @@ function enemyAttack(){
   if(enemyAttackTimer)clearTimeout(enemyAttackTimer);
   const sequence=++enemyAttackSequence;
   boardInputLock(true);
-  setCombatMessage("👹 El enemigo prepara su ataque…");
+  setCombatMessage("👹 TURNO DEL ENEMIGO");
   updateCombatUI();
   enemyAttackTimer=setTimeout(()=>{
     enemyAttackTimer=null;
