@@ -46,7 +46,7 @@ function takeDamage(amount){
   let remaining=Math.max(0,amount),blocked=0;
   if(player.shield){blocked=Math.min(player.shield,remaining);player.shield-=blocked;remaining-=blocked}
   if(remaining){player.currentHealth=Math.max(0,player.currentHealth-remaining);gameStats.totalDamageTaken+=remaining}
-  playDamageSound();hapticFeedback("damage");triggerScreenShake();flashScreen();updateCombatUI()
+  if(typeof playDamageSound==="function")playDamageSound();hapticFeedback("damage");triggerScreenShake();flashScreen();updateCombatUI()
 }
 function chargeUltimate(amount){player.ultimateCharge=Math.min(player.maxUltimateCharge,player.ultimateCharge+amount);playChargeSound();hapticFeedback("ultimate");updateAbilityButton()}
 function enemyAttack(){
@@ -91,7 +91,7 @@ function checkCombatEnd(){
 function updateCombatUI(){
   const hp=Math.max(0,player.currentHealth/player.maxHealth*100),sh=Math.min(100,player.shield/player.maxHealth*100),eh=Math.max(0,enemy.currentHealth/enemy.maxHealth*100);
   setWidth("player-hp-fill",hp);setWidth("player-shield-fill",sh);setWidth("enemy-hp-fill",eh);setWidth("ultimate-fill",player.ultimateCharge);
-  text("player-hp-text",`${player.currentHealth}/${player.maxHealth}`);text("player-shield-text",player.shield);text("enemy-hp-text",`${enemy.currentHealth}/${enemy.maxHealth}`);text("enemy-attack-text",enemy.attackDamage);text("ultimate-text",`${player.ultimateCharge}%`);text("mana-text",`${player.mana}/${player.maxMana}`);text("mana-cost-hint",currentHeroClass==="mage"?`Costo: ${heroClasses.mage.abilityCost} MP`:"—");
+  text("player-hp-text",`${player.currentHealth}/${player.maxHealth}`);text("player-shield-text",player.shield);text("enemy-hp-text",`${enemy.currentHealth}/${enemy.maxHealth}`);text("enemy-attack-text",enemy.attackDamage);text("ultimate-text",`${player.ultimateCharge}%`);text("mana-text",`${player.mana}/${player.maxMana} MP`);text("mana-cost-hint",currentHeroClass==="mage"?`Costo: ${heroClasses.mage.abilityCost} MP`:"—");
   setWidth("mana-fill",player.maxMana?player.mana/player.maxMana*100:0);
   text("pairs-text",`${window.matchedPairs||0}/8 parejas`);text("relics-text",`💎 ${(window.activeRelics||[]).length}`);
   updateAbilityButton()

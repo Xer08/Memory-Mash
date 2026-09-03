@@ -57,3 +57,9 @@ button,.name-row,.mana-row,.enemy-attack,.room-badge,.turn-badge{letter-spacing:
 .mana-visible{margin-top:6px!important}
 .ability-hint{font-size:.65rem;color:#8edcff;white-space:nowrap}
 @media(max-width:560px){.name-row{font-size:.7rem}.mana-row{font-size:.68rem}.mana-visible{margin-top:7px!important}.ability-hint{display:none}}
+
+/* HUD móvil: maná siempre visible y legible */
+.mana-visible{background:#0d1820;border:1px solid #31516a;border-radius:8px;padding:3px 6px;margin-top:6px!important}
+.mana-visible span{font-weight:900;letter-spacing:.04em}
+.mana-visible strong{font-size:.78rem}
+@media(max-width:560px){.hud-stats{min-width:92px}.mana-visible{padding:3px 5px}.mana-visible strong{font-size:.74rem}.bar.mana{height:11px}}

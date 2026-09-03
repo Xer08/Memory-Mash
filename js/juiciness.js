@@ -14,6 +14,7 @@ function playCardFlipSound(){tone(240,.07,"triangle",.035,70)}
 function playMatchSound(){tone(520,.1,"sine",.055,180);setTimeout(()=>tone(780,.12,"sine",.04,100),55)}
 function playMismatchSound(){tone(150,.16,"sawtooth",.035,-60)}
 function playAttackSound(){tone(110,.08,"square",.05,-35);setTimeout(()=>tone(70,.1,"triangle",.035,-20),45)}
+function playDamageSound(){tone(95,.12,"square",.055,-45);setTimeout(()=>tone(55,.16,"sawtooth",.035,-20),45)}
 function playShieldSound(){tone(320,.14,"sine",.04,140)}
 function playHealSound(){tone(430,.12,"sine",.04,160);setTimeout(()=>tone(650,.13,"sine",.03,80),70)}
 function playChargeSound(){tone(440,.1,"triangle",.04,220);setTimeout(()=>tone(660,.12,"triangle",.035,260),60)}
@@ -31,4 +32,4 @@ function showFloatingText(text,type="damage",x=50,y=50){
 function triggerScreenShake(){const el=document.getElementById("game-screen");el.classList.remove("screen-shake");void el.offsetWidth;el.classList.add("screen-shake")}
 function flashScreen(){const el=document.getElementById("game-screen");el.classList.add("hit-flash");setTimeout(()=>el.classList.remove("hit-flash"),250)}
 function initJuiciness(){const once=()=>initAudio();document.addEventListener("pointerdown",once,{once:true})}
-Object.assign(window,{initAudio,initJuiciness,playCardFlipSound,playMatchSound,playMismatchSound,playAttackSound,playShieldSound,playHealSound,playChargeSound,playRevealSound,playVictorySound,playGameOverSound,hapticFeedback,showFloatingText,triggerScreenShake,flashScreen});
+Object.assign(window,{initAudio,initJuiciness,playCardFlipSound,playMatchSound,playMismatchSound,playAttackSound,playDamageSound,playShieldSound,playHealSound,playChargeSound,playRevealSound,playVictorySound,playGameOverSound,hapticFeedback,showFloatingText,triggerScreenShake,flashScreen});
