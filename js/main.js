@@ -69,6 +69,7 @@ function exitToHeroSelection(){
 function setupMainEvents(){
   initializeHeroSelection();
   document.getElementById("hero-ability-btn").addEventListener("click",useHeroAbility);
+  document.getElementById("charged-ability-btn").addEventListener("click",useMageChargedAbility);
   document.getElementById("restart-btn").addEventListener("click",resetRun);
   document.getElementById("victory-restart-btn").addEventListener("click",resetRun);
   document.getElementById("quit-btn").addEventListener("click",()=>showModal("confirm-modal"));

@@ -26,15 +26,15 @@
       <div class="hero-grid">
         <button class="hero-card" data-hero="warrior">
           <span class="hero-icon">⚔️</span><div class="hero-copy"><strong>Guerrero</strong>
-          <small><b>140 HP · 22 ATQ</b><br>El más resistente y poderoso.<br><b>Golpe Crítico:</b> al 100% de Carga, la próxima Espada hace <b>×2.5 daño</b> y consume la carga.</small></div>
+          <small><b>140 HP · 22 ATQ</b><br>El más resistente y poderoso.<br><b>Cargada — Golpe Crítico:</b> al 100% de Carga, su próxima Espada hace <b>×2.5 daño</b>.</small></div>
         </button>
         <button class="hero-card" data-hero="mage">
           <span class="hero-icon">🔮</span><div class="hero-copy"><strong>Mago</strong>
-          <small><b>90 HP · 18 ATQ · 60 MP</b><br><b>Impacto Glacial:</b> 20 MP → hace 24 de daño y congela al enemigo, que pierde su próximo turno.<br>El MP se recupera al derrotar al enemigo.</small></div>
+          <small><b>90 HP · 18 ATQ · 60 MP</b><br><b>Visión Arcana:</b> 20 MP → revela 2 cartas durante 1 segundo.<br><b>Cargada — Congelación Arcana:</b> al 100% de Carga hace 30 de daño y congela al enemigo durante 1 turno.<br>El MP se recupera al derrotar al enemigo.</small></div>
         </button>
         <button class="hero-card" data-hero="rogue">
           <span class="hero-icon">🗡️</span><div class="hero-copy"><strong>Pícaro</strong>
-          <small><b>100 HP · 17 ATQ</b><br><b>Asalto Triple:</b> al 100% de Carga realiza 3 ataques básicos consecutivos.<br><b>Pasiva:</b> 20% de repetir el turno tras una pareja incorrecta.</small></div>
+          <small><b>100 HP · 17 ATQ</b><br><b>Cargada — Asalto Triple:</b> al 100% de Carga realiza 3 ataques básicos consecutivos.<br><b>Pasiva:</b> 20% de repetir el turno tras una pareja incorrecta.</small></div>
         </button>
       </div>
     </div>
@@ -80,6 +80,9 @@
       <div class="progress-copy"><span id="pairs-text">0/7 parejas</span><span id="relics-text">💎 0</span></div>
       <button id="hero-ability-btn" class="ability-btn" type="button" disabled>
         <span id="ability-icon">✨</span><span id="ability-label">Habilidad</span><b id="ability-cost">0</b>
+      </button>
+      <button id="charged-ability-btn" class="ability-btn hidden" type="button" disabled>
+        <span id="charged-ability-icon">⚡</span><span id="charged-ability-label">Cargada</span><b id="charged-ability-cost">100%</b>
       </button>
       <span id="mana-cost-hint" class="ability-hint">—</span>
       <button id="quit-btn" class="secondary-btn" type="button">Salir</button>

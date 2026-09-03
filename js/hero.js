@@ -2,11 +2,12 @@ let currentHeroClass=null;
 let activeRelics=[];
 const heroClasses={
   warrior:{name:"Guerrero",icon:"⚔️",maxHealth:140,attack:22,ability:"Golpe Crítico",abilityIcon:"⚡",criticalMultiplier:2.5,
-    description:"El más resistente y poderoso. Al llegar al 100% de Carga, su próxima Espada es un golpe crítico x2.5 y consume la carga."},
-  mage:{name:"Mago",icon:"🔮",maxHealth:90,attack:18,maxMana:60,ability:"Impacto Glacial",abilityIcon:"❄️",abilityCost:20,abilityDamage:24,
-    description:"Controla el campo. Gasta 20 MP para dañar al enemigo y congelarlo: pierde su próximo turno."},
+    description:"El más resistente y poderoso. Su Carga al 100% convierte su próxima Espada en un golpe crítico x2.5."},
+  mage:{name:"Mago",icon:"🔮",maxHealth:90,attack:18,maxMana:60,ability:"Visión Arcana",abilityIcon:"👁️",abilityCost:20,
+    chargedAbility:"Congelación Arcana",chargedAbilityIcon:"❄️",chargedDamage:30,
+    description:"Controla el campo. Gasta 20 MP para revelar 2 cartas durante 1 segundo. Su Carga al 100% lanza Congelación Arcana: daña y hace perder un turno al enemigo."},
   rogue:{name:"Pícaro",icon:"🗡️",maxHealth:100,attack:17,ability:"Asalto Triple",abilityIcon:"🗡️",abilityCost:100,
-    description:"Golpea tres veces seguidas. Pasiva: 20% de repetir el turno después de encontrar una pareja incorrecta."}
+    description:"Especialista en ráfagas. Con Carga al 100% realiza 3 ataques básicos consecutivos. Pasiva: 20% de repetir turno tras una pareja incorrecta."}
 };
 const relicDefinitions={
  fireRing:{name:"Anillo de Fuego",description:"+5 daño extra con Espadas.",icon:"🔥",effect:"swordDamage",value:5},
@@ -36,54 +37,70 @@ function canUseHeroAbility(){
  if(currentHeroClass==="warrior"||currentHeroClass==="rogue")return player.ultimateCharge>=100;
  return false
 }
+function canUseChargedAbility(){
+ return currentHeroClass==="mage" && getCurrentState()===GameState.PLAYER_TURN_IDLE && player.ultimateCharge>=100;
+}
 function updateHeroAbilityUI(){
  const h=heroClasses[currentHeroClass||"warrior"],b=document.getElementById("hero-ability-btn");if(!b)return;
  document.getElementById("ability-icon").textContent=h.abilityIcon;document.getElementById("ability-label").textContent=h.ability;
  document.getElementById("ability-cost").textContent=currentHeroClass==="mage"?`${h.abilityCost} MP`:"100%";
+ const cb=document.getElementById("charged-ability-btn");
+ if(cb){
+   const mage=currentHeroClass==="mage";cb.classList.toggle("hidden",!mage);
+   cb.disabled=!canUseChargedAbility();cb.classList.toggle("ready",canUseChargedAbility());
+   const ci=document.getElementById("charged-ability-icon"),cl=document.getElementById("charged-ability-label"),cc=document.getElementById("charged-ability-cost");
+   if(ci)ci.textContent=h.chargedAbilityIcon||"⚡";if(cl)cl.textContent=h.chargedAbility||"Cargada";if(cc)cc.textContent="100%";
+ }
+}
+function endPlayerAction(){
+ if(enemy.currentHealth<=0){checkCombatEnd();return}
+ boardLocked=false;
+ if(setState(GameState.ENEMY_TURN)){setCombatMessage("👹 El enemigo ataca…");enemyAttack()}
+}
+function revealRandomCards(count=2,duration=1000){
+ const available=[...document.querySelectorAll("#board .card")].filter(c=>!c.classList.contains("matched"));
+ if(!available.length)return;
+ const chosen=[];
+ while(chosen.length<Math.min(count,available.length)){const c=available[Math.floor(Math.random()*available.length)];if(!chosen.includes(c))chosen.push(c)}
+ boardLocked=true;chosen.forEach(c=>{c.classList.add("temporarily-revealed");c.dataset.state="preview"});
+ playRevealSound();showFloatingText("👁️ 2 RUNAS REVELADAS","charge",50,34);
+ setTimeout(()=>{chosen.forEach(c=>{c.classList.remove("temporarily-revealed");if(!c.classList.contains("flipped")&&!c.classList.contains("matched"))c.dataset.state="hidden"});boardLocked=false;endPlayerAction()},duration);
 }
 function useHeroAbility(){
  if(!canUseHeroAbility())return;
  if(currentHeroClass==="mage"){
    player.mana-=heroClasses.mage.abilityCost;
-   const dmg=heroClasses.mage.abilityDamage;
-   dealDamageToEnemy(dmg);
-   enemyFrozenTurns=1;
-   showFloatingText(`-${dmg} ❄️`,"damage",70,45);
-   showFloatingText("CONGELADO","charge",70,35);
-   playRevealSound();hapticFeedback("ultimate");
-   setCombatMessage("❄️ Impacto Glacial: el enemigo pierde su próximo turno.");
-   updateCombatUI();
-   if(enemy.currentHealth<=0)checkCombatEnd();
-   return;
+   setCombatMessage("👁️ Visión Arcana: observa 2 runas durante un instante.");
+   updateCombatUI();revealRandomCards(2,1000);return;
  }
  if(currentHeroClass==="warrior"){
    player.ultimateCharge=0;
    const dmg=Math.round((player.baseAttack+runeEffects.sword.damage)*heroClasses.warrior.criticalMultiplier);
-   dealDamageToEnemy(dmg);
-   showFloatingText(`⚡ CRÍTICO -${dmg}`,"damage",70,45);
-   hapticFeedback("ultimate");
-   setCombatMessage(`⚡ ¡Golpe Crítico! ${dmg} de daño.`);
-   updateCombatUI();
-   if(enemy.currentHealth<=0)checkCombatEnd();
-   return;
+   dealDamageToEnemy(dmg);showFloatingText(`⚡ CRÍTICO -${dmg}`,"damage",70,45);hapticFeedback("ultimate");
+   setCombatMessage(`⚡ ¡Golpe Crítico! ${dmg} de daño.`);updateCombatUI();endPlayerAction();return;
  }
  if(currentHeroClass==="rogue"){
-   player.ultimateCharge=0;
-   const dmg=player.baseAttack;
-   let hits=0;
+   player.ultimateCharge=0;const dmg=player.baseAttack;let hits=0;
    const hit=()=>{
-     if(enemy.currentHealth<=0){updateCombatUI();return}
+     if(enemy.currentHealth<=0){checkCombatEnd();return}
      hits++;dealDamageToEnemy(dmg);showFloatingText(`-${dmg}`,"damage",70,40);
-     if(hits<3 && enemy.currentHealth>0){setTimeout(hit,140)}
-     else {setCombatMessage(`🗡️ ¡Asalto Triple! ${hits} golpes consecutivos.`);updateCombatUI();if(enemy.currentHealth<=0)checkCombatEnd()}
-   };
-   hit();
+     if(hits<3&&enemy.currentHealth>0)setTimeout(hit,140);
+     else {setCombatMessage(`🗡️ ¡Asalto Triple! ${hits} golpes consecutivos.`);updateCombatUI();endPlayerAction()}
+   };hit();
  }
+}
+function useMageChargedAbility(){
+ if(!canUseChargedAbility())return;
+ player.ultimateCharge=0;const dmg=heroClasses.mage.chargedDamage;
+ dealDamageToEnemy(dmg);enemyFrozenTurns=1;
+ showFloatingText(`❄️ -${dmg}`,"damage",70,42);showFloatingText("CONGELADO","charge",70,32);
+ hapticFeedback("ultimate");setCombatMessage(`❄️ ¡Congelación Arcana! ${dmg} de daño. El enemigo pierde su próximo turno.`);updateCombatUI();
+ if(enemy.currentHealth<=0)checkCombatEnd();else endPlayerAction();
 }
 function checkRogueDodge(){
  if(currentHeroClass!=="rogue"||Math.random()>=.20)return false;
  showFloatingText("¡OTRO TURNO!","dodge",50,38);hapticFeedback("dodge");setCombatMessage("🗡️ ¡Pasiva del Pícaro! Repite el turno.");return true
 }
-function addRelic(key){if(!relicDefinitions[key]||activeRelics.includes(key))return;activeRelics.push(key);window.activeRelics=activeRelics;const r=relicDefinitions[key];if(r.effect==="maxHealth"){player.maxHealth+=r.value;player.currentHealth+=r.value}if(r.effect==="attackBonus")player.baseAttack+=r.value;showFloatingText(`${r.icon} ${r.name}`,"charge",50,45);updateCombatUI()}
-function getRandomRelics(n=3){const pool=Object.keys(relicDefinitions).filter(k=>!activeRelics.includes(k));for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}return pool.slice(0,n)}
-Object.assign(window,{currentHeroClass,heroClasses,relicDefinitions,activeRelics,initializeHeroSelection,selectHero,resetHero,canUseHeroAbility,updateHeroAbilityUI,useHeroAbility,checkRogueDodge,addRelic,getRandomRelics});
+function addRelic(key){if(!relicDefinitions[key])return;activeRelics.push(key);window.activeRelics=activeRelics;const r=relicDefinitions[key];if(r.effect==="maxHealth"){player.maxHealth+=r.value;player.currentHealth+=r.value}if(r.effect==="attackBonus")player.baseAttack+=r.value;showFloatingText(`${r.icon} ${r.name}`,"charge",50,45);updateCombatUI()}
+function getRandomRelics(n=3){let pool=Object.keys(relicDefinitions).filter(k=>!activeRelics.includes(k));if(pool.length<n)pool=Object.keys(relicDefinitions);pool=[...pool];for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}return pool.slice(0,n)}
+Object.assign(window,{currentHeroClass,heroClasses,relicDefinitions,activeRelics,initializeHeroSelection,selectHero,resetHero,canUseHeroAbility,canUseChargedAbility,updateHeroAbilityUI,useHeroAbility,useMageChargedAbility,checkRogueDodge,addRelic,getRandomRelics});
