@@ -11,6 +11,17 @@ const heroClasses={
     chargedAbility:"Asalto Triple",chargedAbilityIcon:"⚔️",
     description:"Especialista en velocidad. Cuchilla cuesta 10 MP y hace 10 de daño fijo. Su Carga al 100% ejecuta 3 ataques básicos. Pasiva: 20% de repetir turno tras una pareja incorrecta."}
 };
+
+// Fuente única de verdad para el maná inicial de cada clase.
+// Se ejecuta al comenzar una sala DESPUÉS de cualquier reset para evitar que
+// una rutina de inicio vuelva a dejar al héroe en 0/0 MP.
+function initializeHeroMana(){
+  if(!currentHeroClass || !heroClasses[currentHeroClass])return;
+  const startingMana=Number(heroClasses[currentHeroClass].maxMana)||0;
+  player.maxMana=startingMana;
+  player.mana=startingMana;
+  updateCombatUI();
+}
 const relicDefinitions={
  fireRing:{name:"Anillo de Fuego",description:"+5 daño extra con Espadas.",icon:"🔥",effect:"swordDamage",value:5},
  spiritShield:{name:"Escudo Espiritual",description:"+4 Escudo al encontrar esta runa.",icon:"🛡️",effect:"shieldBonus",value:4},
@@ -29,6 +40,7 @@ function applyHeroStats(){
  activeRelics=[];window.activeRelics=activeRelics;window.currentHeroClass=currentHeroClass;
  const avatar=document.getElementById("player-avatar"),name=document.getElementById("player-name");
  if(avatar)avatar.textContent=h.icon;if(name)name.textContent=h.name;
+ initializeHeroMana();
  updateHeroAbilityUI();updateCombatUI();
 }
 function resetHero(){currentHeroClass=null;activeRelics=[];window.currentHeroClass=null;window.activeRelics=activeRelics}
@@ -46,11 +58,13 @@ function canUseChargedAbility(){
 function updateHeroAbilityUI(){
  const h=heroClasses[currentHeroClass||"warrior"],b=document.getElementById("hero-ability-btn");if(!b)return;
  const isWarrior=currentHeroClass==="warrior";
- b.classList.toggle("hidden",isWarrior);
- document.getElementById("ability-icon").textContent=h.abilityIcon;
+ const hasActiveManaAbility=!isWarrior && !!h.ability && Number(h.abilityCost)>0;
+ b.classList.toggle("hidden",!hasActiveManaAbility);
+ b.style.display=hasActiveManaAbility?"flex":"none";
+ document.getElementById("ability-icon").textContent=h.abilityIcon||"✨";
  document.getElementById("ability-label").textContent=h.ability;
  document.getElementById("ability-cost").textContent=isWarrior?"5 MP":`${h.abilityCost} MP`;
- b.disabled=isWarrior||!canUseHeroAbility();b.classList.toggle("ready",!b.disabled);
+ b.disabled=!hasActiveManaAbility||!canUseHeroAbility();b.classList.toggle("ready",!b.disabled);
  const cb=document.getElementById("charged-ability-btn");
  if(cb){
    cb.classList.remove("hidden");cb.disabled=!canUseChargedAbility();cb.classList.toggle("ready",!cb.disabled);
@@ -132,4 +146,4 @@ function checkRogueDodge(){
 }
 function addRelic(key){if(!relicDefinitions[key])return;activeRelics.push(key);window.activeRelics=activeRelics;const r=relicDefinitions[key];if(r.effect==="maxHealth"){player.maxHealth+=r.value;player.currentHealth+=r.value}if(r.effect==="attackBonus")player.baseAttack+=r.value;showFloatingText(`${r.icon} ${r.name}`,"charge",50,45);updateCombatUI()}
 function getRandomRelics(n=3){let pool=Object.keys(relicDefinitions).filter(k=>!activeRelics.includes(k));if(pool.length<n)pool=Object.keys(relicDefinitions);pool=[...pool];for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}return pool.slice(0,n)}
-Object.assign(window,{currentHeroClass,heroClasses,relicDefinitions,activeRelics,initializeHeroSelection,selectHero,resetHero,canUseHeroAbility,canUseChargedAbility,updateHeroAbilityUI,useHeroAbility,useMageChargedAbility,checkRogueDodge,addRelic,getRandomRelics,restoreMana});
+Object.assign(window,{currentHeroClass,heroClasses,relicDefinitions,activeRelics,initializeHeroSelection,selectHero,resetHero,canUseHeroAbility,canUseChargedAbility,updateHeroAbilityUI,useHeroAbility,useMageChargedAbility,checkRogueDodge,addRelic,getRandomRelics,restoreMana,initializeHeroMana});

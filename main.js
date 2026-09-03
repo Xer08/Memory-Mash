@@ -3,10 +3,15 @@ let previewTimer=null;
 
 function startGame(){
   if(previewTimer){clearTimeout(previewTimer);previewTimer=null}
+  // Reinicializamos la sala y, al FINAL de todos los resets, aplicamos los
+  // valores de la clase. Así ninguna rutina de arranque puede borrar el MP.
   initializeDungeon();
+  resetPlayer();
+  applyHeroStats();
   createEnemy(1);
   initializeBoard(true);
   resetState();
+  initializeHeroMana();
   currentTurn=1;
   updateTurnDisplay();
   updateCombatUI();
@@ -44,6 +49,7 @@ function resetRun(){
   createEnemy(1);
   initializeBoard(true);
   resetState();
+  initializeHeroMana();
   currentTurn=1;
   updateTurnDisplay();
   updateCombatUI();
@@ -86,7 +92,20 @@ function preventMobileGestures(){
 }
 function registerServiceWorker(){
   if(!("serviceWorker"in navigator))return;
-  window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").then(r=>{r.update();console.log("SW listo",r.scope)}).catch(console.warn))
+  window.addEventListener("load",()=>{
+    navigator.serviceWorker.addEventListener("controllerchange",()=>{
+      if(window.__swReloaded)return;
+      window.__swReloaded=true;
+      window.location.reload();
+    });
+    navigator.serviceWorker.register("./sw.js?v=18",{updateViaCache:"none"})
+      .then(r=>{
+        r.update();
+        setTimeout(()=>r.update(),1500);
+        console.log("SW v18 listo",r.scope);
+      })
+      .catch(console.warn);
+  });
 }
 document.addEventListener("DOMContentLoaded",()=>{initJuiciness();setupMainEvents();preventMobileGestures();registerServiceWorker()});
 Object.assign(window,{startGame,resetRun,exitToHeroSelection,updateTurnDisplay,incrementTurn,startBoardPreview});

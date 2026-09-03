@@ -1,3 +1,11 @@
+## v18 — Clases y maná
+- Maná inicial garantizado al comenzar cada sala: Guerrero 40 MP, Pícaro 60 MP, Mago 100 MP.
+- +5 MP por pareja correcta.
+- El Pícaro muestra y habilita su botón **Cuchilla** (10 MP, 10 daño fijo).
+- El Mago muestra y habilita **Visión Arcana** (20 MP).
+- El maná de la clase se reaplica después de los resets de inicio/nueva sala para evitar estados 0/0 MP.
+- Mensaje **TURNO DEL ENEMIGO** reforzado visualmente.
+
 # Rune Clash — Memory Tactics
 
 Juego móvil PWA de memoria + combate RPG.

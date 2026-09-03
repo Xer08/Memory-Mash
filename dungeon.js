@@ -12,14 +12,15 @@ function showRoomModal(){
 function selectRelic(key){addRelic(key);hideModals();setTimeout(advanceRoom,350)}
 function advanceRoom(){
   currentRoom++;updateRoomDisplay();createEnemy(currentRoom);
-  // Cada nuevo nivel comienza con el maná inicial de la clase.
-  if(typeof currentHeroClass!=="undefined"&&typeof heroClasses!=="undefined"){
-    const startingMana=heroClasses[currentHeroClass]?.maxMana||0;
-    player.maxMana=startingMana;
-    player.mana=startingMana;
-    if(typeof updateHeroAbilityUI==="function")updateHeroAbilityUI();
+  healBetweenRooms();resetBoard();resetState();
+  // MUY IMPORTANTE: el MP de inicio se aplica después de todos los resets.
+  if(typeof initializeHeroMana==="function")initializeHeroMana();
+  else if(typeof currentHeroClass!=="undefined"&&typeof heroClasses!=="undefined"){
+    const startingMana=Number(heroClasses[currentHeroClass]?.maxMana)||0;
+    player.maxMana=startingMana;player.mana=startingMana;
   }
-  healBetweenRooms();resetBoard();resetState();updateCombatUI();setCombatMessage(`Sala ${currentRoom}: ${enemy.maxHealth} HP · ${enemy.attackDamage} daño.`)
+  if(typeof updateHeroAbilityUI==="function")updateHeroAbilityUI();
+  updateCombatUI();setCombatMessage(`Sala ${currentRoom}: ${enemy.maxHealth} HP · ${enemy.attackDamage} daño.`)
 }
 function healBetweenRooms(){const amount=Math.max(1,Math.round(player.maxHealth*.2));const before=player.currentHealth;player.currentHealth=Math.min(player.maxHealth,player.currentHealth+amount);const healed=player.currentHealth-before;if(healed)showFloatingText(`+${healed} HP`,"heal",25,45);updateCombatUI()}
 function resetDungeon(){currentRoom=1;isDungeonComplete=false;updateRoomDisplay()}

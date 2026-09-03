@@ -8,10 +8,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
   <title>Rune Clash — Memory Tactics</title>
-  <link rel="manifest" href="./manifest.json">
-  <link rel="stylesheet" href="./css/theme.css">
-  <link rel="stylesheet" href="./css/board.css">
-  <link rel="stylesheet" href="./css/effects.css">
+  <link rel="manifest" href="./manifest.json?v=18">
+  <link rel="stylesheet" href="./css/theme.css?v=18">
+  <link rel="stylesheet" href="./css/board.css?v=18">
+  <link rel="stylesheet" href="./css/effects.css?v=18">
 </head>
 <body>
 <main id="app">
@@ -50,7 +50,7 @@
           <div class="bar"><i id="player-hp-fill"></i></div>
           <div class="name-row compact"><span>🛡️ Escudo</span><span id="player-shield-text">0</span></div>
           <div class="bar shield"><i id="player-shield-fill"></i></div>
-          <div class="mana-row mana-visible"><span>💧 MANÁ</span><strong id="mana-text">0/0 MP</strong></div>
+          <div class="mana-row mana-visible"><span>💧 MANÁ</span><strong id="mana-text">— MP</strong></div>
           <div class="bar mana"><i id="mana-fill"></i></div>
           <div class="mana-row"><span>⚡ CARGA</span><strong id="ultimate-text">0%</strong></div>
           <div class="bar ultimate"><i id="ultimate-fill"></i></div>
@@ -78,7 +78,7 @@
 
     <footer class="game-footer">
       <div class="progress-copy"><span id="pairs-text">0/7 parejas</span><span id="relics-text">💎 0</span></div>
-      <button id="hero-ability-btn" class="ability-btn" type="button" disabled>
+      <button id="hero-ability-btn" class="ability-btn" type="button" disabled aria-label="Habilidad de clase">
         <span id="ability-icon">✨</span><span id="ability-label">Habilidad</span><b id="ability-cost">0</b>
       </button>
       <button id="charged-ability-btn" class="ability-btn hidden" type="button" disabled>
@@ -130,12 +130,12 @@
   </div>
 </div>
 
-<script src="./js/state.js"></script>
-<script src="./js/juiciness.js"></script>
-<script src="./js/combat.js"></script>
-<script src="./js/hero.js"></script>
-<script src="./js/board.js"></script>
-<script src="./js/dungeon.js"></script>
-<script src="./js/main.js"></script>
+<script src="./js/state.js?v=18"></script>
+<script src="./js/juiciness.js?v=18"></script>
+<script src="./js/combat.js?v=18"></script>
+<script src="./js/hero.js?v=18"></script>
+<script src="./js/board.js?v=18"></script>
+<script src="./js/dungeon.js?v=18"></script>
+<script src="./js/main.js?v=18"></script>
 </body>
 </html>

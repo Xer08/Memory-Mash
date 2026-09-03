@@ -212,3 +212,21 @@ html,body,button,input,textarea,select{font-family:var(--ui-font)!important;}
   #hero-screen .hero-card strong{font-size:.65rem;}
   #hero-screen .hero-card small{font-size:.45rem;line-height:1.1;}
 }
+
+
+/* ===== v17: MP y habilidades fiables + menú ultra compacto ===== */
+#hero-screen .hero-panel{max-height:calc(100svh - 105px);overflow:hidden;}
+#hero-screen .hero-grid{align-items:stretch;}
+#hero-screen .hero-card{min-height:0;}
+#hero-screen .hero-copy{overflow:hidden;}
+@media(max-width:560px){
+  #hero-screen .hero-panel{max-height:calc(100svh - 82px);overflow:hidden;}
+  #hero-screen .hero-grid{height:auto;}
+  #hero-screen .hero-card small{display:block;max-height:8.4em;overflow:hidden;}
+  #hero-screen .hero-card{min-height:0;}
+  #hero-screen .tip{display:none;}
+  .game-footer{flex-wrap:nowrap;}
+  #hero-ability-btn{display:flex;}
+}
+.combat-message.enemy-turn-message{font-size:clamp(1.45rem,6vw,2rem)!important;min-height:40px!important;line-height:1.05!important;}
+@media(max-width:380px){.combat-message.enemy-turn-message{font-size:1.32rem!important;}}

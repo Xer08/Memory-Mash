@@ -1,62 +1,74 @@
-const CACHE_NAME = "rune-clash-v16";
+const VERSION = "18";
+const CACHE_NAME = `rune-clash-v${VERSION}`;
 const ASSETS = [
   "./", "./index.html", "./manifest.json",
-  "./css/theme.css", "./css/board.css", "./css/effects.css",
-  "./js/state.js", "./js/juiciness.js", "./js/combat.js", "./js/hero.js",
-  "./js/board.js", "./js/dungeon.js", "./js/main.js",
+  "./css/theme.css?v=18", "./css/board.css?v=18", "./css/effects.css?v=18",
+  "./js/state.js?v=18", "./js/juiciness.js?v=18", "./js/combat.js?v=18", "./js/hero.js?v=18",
+  "./js/board.js?v=18", "./js/dungeon.js?v=18", "./js/main.js?v=18",
   "./icon-192.png", "./icon-512.png"
 ];
 
 self.addEventListener("install", event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(ASSETS))
-      .then(() => self.skipWaiting())
-  );
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    // Do not let one missing/temporarily unavailable file abort the entire SW install.
+    await Promise.all(ASSETS.map(async asset => {
+      try { await cache.add(asset); } catch (err) { console.warn("No se pudo precachear", asset, err); }
+    }));
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener("activate", event => {
-  event.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))))
-      .then(() => self.clients.claim())
-  );
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key)));
+    await self.clients.claim();
+  })());
 });
 
-// Network First para HTML/CSS/JS: evita que GitHub Pages quede atrapado
-// mostrando una versión vieja después de un deploy. Si no hay red, usamos caché.
 self.addEventListener("fetch", event => {
   const request = event.request;
   if (request.method !== "GET") return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  const isAppCode = /\.(html?|css|js)$/.test(url.pathname) || request.mode === "navigate";
+  const isAppCode = /\\.(html?|css|js)$/.test(url.pathname) || request.mode === "navigate";
 
-  event.respondWith(
-    (isAppCode ? fetch(request, { cache: "no-store" }) : caches.match(request))
-      .then(response => {
-        if (response) {
-          if (isAppCode && response.ok) {
-            const clone = response.clone();
-            event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.put(request, clone)));
-          }
-          return response;
+  event.respondWith((async () => {
+    if (isAppCode) {
+      // Always ask the network first for app code. This is the important part:
+      // GitHub Pages/CDN/browser caches cannot trap the PWA on an old JS/CSS build.
+      try {
+        const fresh = await fetch(request, { cache: "reload" });
+        if (fresh && fresh.ok) {
+          const cache = await caches.open(CACHE_NAME);
+          await cache.put(request, fresh.clone());
         }
-        return fetch(request).then(networkResponse => {
-          if (networkResponse && networkResponse.ok) {
-            const clone = networkResponse.clone();
-            event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.put(request, clone)));
-          }
-          return networkResponse;
-        });
-      })
-      .catch(() => caches.match(request).then(cached => {
+        return fresh;
+      } catch (err) {
+        const cached = await caches.match(request);
         if (cached) return cached;
-        if (request.mode === "navigate") return caches.match("./index.html");
-        return new Response("Recurso no disponible sin conexión.", { status: 503 });
-      }))
-  );
+        if (request.mode === "navigate") {
+          return (await caches.match("./index.html")) || new Response("Sin conexión.", {status:503});
+        }
+        return new Response("Recurso no disponible sin conexión.", {status:503});
+      }
+    }
+
+    const cached = await caches.match(request);
+    if (cached) return cached;
+    try {
+      const network = await fetch(request);
+      if (network && network.ok) {
+        const cache = await caches.open(CACHE_NAME);
+        await cache.put(request, network.clone());
+      }
+      return network;
+    } catch (err) {
+      return new Response("Recurso no disponible sin conexión.", {status:503});
+    }
+  })());
 });
 
 self.addEventListener("message", event => {
