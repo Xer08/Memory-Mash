@@ -59,7 +59,7 @@ function resetBoard(){initializeBoard(true)}
 function onRuneResolved(){
   flippedCards=[];boardLocked=false;
   if(enemy.currentHealth<=0){checkCombatEnd();return}
-  setState(GameState.PLAYER_TURN_IDLE);setCombatMessage("¡Pareja acertada! Encuentra la siguiente.");
+  setState(GameState.PLAYER_TURN_IDLE);setCombatMessage("¡Pareja acertada! Encuentra la siguiente.");updateCombatUI();
   if(matchedPairs>=requiredPairs){setCombatMessage("¡Tablero despejado! La trampa no era necesaria. Nueva oleada…");setTimeout(()=>initializeBoard(true),700)}
 }
 document.addEventListener("cardMatch",onCardMatch);

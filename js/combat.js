@@ -3,6 +3,7 @@ const enemy={maxHealth:70,currentHealth:70,attackDamage:10};
 let gameStats={roomsCleared:0,pairsMatched:0,totalDamageDealt:0,totalDamageTaken:0};
 let enemyAttackTimer=null;
 let enemyAttackSequence=0;
+let enemyFrozenTurns=0;
 const runeEffects={
   sword:{name:"Espada",damage:15},shield:{name:"Escudo",shield:14},potion:{name:"Poción",healing:18},
   trap:{name:"Trampa",damage:12},ultimate:{name:"Carga Suprema",charge:25}
@@ -26,7 +27,18 @@ function resolveRuneEffect(type){
   const effect=runeEffects[type];if(!effect)return;
   gameStats.pairsMatched++;
   const e=applyRelicBonuses(type,effect);
-  if(type==="sword"){const dmg=player.baseAttack+e.damage;dealDamageToEnemy(dmg);showFloatingText(`-${dmg}`,"damage",70,45)}
+  if(type==="sword"){
+    let dmg=player.baseAttack+e.damage;
+    let critical=false;
+    if(currentHeroClass==="warrior"&&player.ultimateCharge>=100){
+      dmg=Math.round(dmg*heroClasses.warrior.criticalMultiplier);
+      player.ultimateCharge=0;
+      critical=true;
+    }
+    dealDamageToEnemy(dmg);
+    showFloatingText(critical?`⚡ CRÍTICO -${dmg}`:`-${dmg}`,"damage",70,45);
+    if(critical)setCombatMessage(`⚡ ¡Golpe Crítico del Guerrero! ${dmg} de daño.`);
+  }
   if(type==="shield"){addShield(e.shield);showFloatingText(`+${e.shield}`,"shield",25,55)}
   if(type==="potion"){healPlayer(e.healing);showFloatingText(`+${e.healing} HP`,"heal",25,45)}
   if(type==="trap"){takeDamage(e.damage);showFloatingText(`-${e.damage}`,"enemy",28,45)}
@@ -65,6 +77,15 @@ function enemyAttack(){
       // Recuperación de seguridad: nunca dejamos al jugador sin turno.
       setState(GameState.ENEMY_TURN);
     }
+    if(enemyFrozenTurns>0){
+      enemyFrozenTurns--;
+      setState(GameState.PLAYER_TURN_IDLE);
+      boardLocked=false;
+      boardInputLock(false);
+      setCombatMessage("❄️ ¡El enemigo está congelado! Pierde este turno.");
+      updateCombatUI();
+      return;
+    }
     const damage=enemy.attackDamage;
     takeDamage(damage);
     showFloatingText(`-${damage}`,"enemy",73,35);
@@ -102,7 +123,7 @@ function updateCombatUI(){
   setWidth("player-hp-fill",hp);setWidth("player-shield-fill",sh);setWidth("enemy-hp-fill",eh);setWidth("ultimate-fill",player.ultimateCharge);
   text("player-hp-text",`${player.currentHealth}/${player.maxHealth}`);text("player-shield-text",player.shield);text("enemy-hp-text",`${enemy.currentHealth}/${enemy.maxHealth}`);text("enemy-attack-text",enemy.attackDamage);text("ultimate-text",`${player.ultimateCharge}%`);text("mana-text",`${player.mana}/${player.maxMana} MP`);text("mana-cost-hint",currentHeroClass==="mage"?`Costo: ${heroClasses.mage.abilityCost} MP`:"—");
   setWidth("mana-fill",player.maxMana?player.mana/player.maxMana*100:0);
-  text("pairs-text",`${window.matchedPairs||0}/${window.requiredPairs||7} parejas`);text("relics-text",`💎 ${(window.activeRelics||[]).length}`);
+  text("pairs-text",`${window.matchedPairs||0}/${window.requiredPairs||7} parejas`);text("enemy-status-text",enemyFrozenTurns>0?"❄️ CONGELADO":"");text("relics-text",`💎 ${(window.activeRelics||[]).length}`);
   updateAbilityButton()
 }
 function setWidth(id,v){const el=document.getElementById(id);if(el)el.style.width=`${Math.max(0,Math.min(100,v))}%`}
@@ -114,4 +135,4 @@ function showGameOverModal(){text("final-rooms",gameStats.roomsCleared);text("fi
 function showVictoryModal(){text("victory-rooms",gameStats.roomsCleared);text("victory-pairs",gameStats.pairsMatched);text("victory-damage",gameStats.totalDamageDealt);showModal("victory-modal")}
 function showModal(id){document.getElementById("modal-overlay").classList.remove("hidden");document.querySelectorAll("#modal-overlay .modal").forEach(m=>m.classList.add("hidden"));document.getElementById(id).classList.remove("hidden")}
 function hideModals(){document.getElementById("modal-overlay").classList.add("hidden");document.querySelectorAll("#modal-overlay .modal").forEach(m=>m.classList.add("hidden"))}
-Object.assign(window,{player,enemy,gameStats,runeEffects,initializeCombat,resetPlayer,createEnemy,resolveRuneEffect,dealDamageToEnemy,addShield,healPlayer,takeDamage,chargeUltimate,enemyAttack,checkCombatEnd,updateCombatUI,setCombatMessage,updateAbilityButton,showGameOverModal,showVictoryModal,showModal,hideModals});
+Object.assign(window,{player,enemy,gameStats,enemyFrozenTurns,runeEffects,initializeCombat,resetPlayer,createEnemy,resolveRuneEffect,dealDamageToEnemy,addShield,healPlayer,takeDamage,chargeUltimate,enemyAttack,checkCombatEnd,updateCombatUI,setCombatMessage,updateAbilityButton,showGameOverModal,showVictoryModal,showModal,hideModals});

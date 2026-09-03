@@ -16,3 +16,7 @@ Juego móvil PWA de memoria + combate RPG.
 
 ## Ejecutar
 Abre `index.html` mediante un servidor local o publícalo en GitHub Pages. El Service Worker requiere un contexto seguro (HTTPS) o localhost.
+
+
+## Créditos de tipografía
+La interfaz utiliza **Yoster Island**, de codeman38, distribuida como freeware para proyectos; se carga como webfont desde Fontzip. La fuente se acredita a su autor original.
