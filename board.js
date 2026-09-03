@@ -27,7 +27,8 @@ function evaluateMatch(){
   const [a,b]=flippedCards;const match=a.dataset.type===b.dataset.type;
   if(match){
     setTimeout(()=>{
-      setState(GameState.RESOLVING_EFFECT);a.classList.add("matched","match-pop");b.classList.add("matched","match-pop");a.dataset.state=b.dataset.state="matched";playMatchSound();hapticFeedback("match");if(a.dataset.type!==CardTypes.TRAP){matchedPairs++;window.matchedPairs=matchedPairs;}document.dispatchEvent(new CustomEvent("cardMatch",{detail:{cardType:a.dataset.type}}));},180)
+      setState(GameState.RESOLVING_EFFECT);a.classList.add("matched","match-pop");b.classList.add("matched","match-pop");a.dataset.state=b.dataset.state="matched";playMatchSound();hapticFeedback("match");if(a.dataset.type!==CardTypes.TRAP){matchedPairs++;window.matchedPairs=matchedPairs;}document.dispatchEvent(new CustomEvent("cardMatch",{detail:{cardType:a.dataset.type}}));
+      if(typeof updateHeroAbilityUI==="function")updateHeroAbilityUI();},180)
   }else{
     a.classList.add("fail-pop");b.classList.add("fail-pop");playMismatchSound();hapticFeedback("mismatch");setCombatMessage("No coinciden…");
     setTimeout(()=>{a.classList.remove("flipped","fail-pop");b.classList.remove("flipped","fail-pop");a.dataset.state=b.dataset.state="hidden";flippedCards=[];boardLocked=false;

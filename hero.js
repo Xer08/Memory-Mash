@@ -34,10 +34,11 @@ function applyHeroStats(){
 function resetHero(){currentHeroClass=null;activeRelics=[];window.currentHeroClass=null;window.activeRelics=activeRelics}
 function canUseHeroAbility(){
  const playerTurn=getCurrentState()===GameState.PLAYER_TURN_IDLE;
- if(!playerTurn)return false;
- if(currentHeroClass==="mage")return player.mana>=heroClasses.mage.abilityCost;
- if(currentHeroClass==="rogue")return player.mana>=heroClasses.rogue.abilityCost;
- return false;
+ if(!playerTurn || !currentHeroClass)return false;
+ const h=heroClasses[currentHeroClass];
+ // Guerrero: Contraataque es una pasiva automática, no un botón.
+ if(currentHeroClass==="warrior")return false;
+ return player.mana>=h.abilityCost;
 }
 function canUseChargedAbility(){
  return !!currentHeroClass && getCurrentState()===GameState.PLAYER_TURN_IDLE && player.ultimateCharge>=100;
@@ -57,6 +58,18 @@ function updateHeroAbilityUI(){
    if(ci)ci.textContent=h.chargedAbilityIcon||"⚡";if(cl)cl.textContent=h.chargedAbility||"Cargada";if(cc)cc.textContent="100%";
  }
 }
+
+function restoreMana(amount=5){
+ const gain=Math.max(0,Number(amount)||0);
+ if(!player.maxMana || !gain)return 0;
+ const before=player.mana;
+ player.mana=Math.min(player.maxMana,player.mana+gain);
+ const restored=player.mana-before;
+ if(restored>0){showFloatingText(`+${restored} MP`,"charge",25,62);}
+ updateCombatUI();
+ return restored;
+}
+
 function endPlayerAction(){
  if(enemy.currentHealth<=0){checkCombatEnd();return}
  boardLocked=false;
@@ -75,11 +88,13 @@ function useHeroAbility(){
  if(!canUseHeroAbility())return;
  if(currentHeroClass==="mage"){
    player.mana-=heroClasses.mage.abilityCost;
+   updateCombatUI();
    setCombatMessage("👁️ Visión Arcana: observa 2 runas durante un instante.");
    updateCombatUI();revealRandomCards(2,1000);return;
  }
  if(currentHeroClass==="rogue"){
    player.mana-=heroClasses.rogue.abilityCost;
+   updateCombatUI();
    const dmg=heroClasses.rogue.abilityDamage;dealDamageToEnemy(dmg);
    showFloatingText(`🗡️ -${dmg}`,"damage",70,45);hapticFeedback("attack");
    setCombatMessage(`🗡️ ¡Cuchilla! ${dmg} de daño directo.`);updateCombatUI();endPlayerAction();
@@ -117,4 +132,4 @@ function checkRogueDodge(){
 }
 function addRelic(key){if(!relicDefinitions[key])return;activeRelics.push(key);window.activeRelics=activeRelics;const r=relicDefinitions[key];if(r.effect==="maxHealth"){player.maxHealth+=r.value;player.currentHealth+=r.value}if(r.effect==="attackBonus")player.baseAttack+=r.value;showFloatingText(`${r.icon} ${r.name}`,"charge",50,45);updateCombatUI()}
 function getRandomRelics(n=3){let pool=Object.keys(relicDefinitions).filter(k=>!activeRelics.includes(k));if(pool.length<n)pool=Object.keys(relicDefinitions);pool=[...pool];for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}return pool.slice(0,n)}
-Object.assign(window,{currentHeroClass,heroClasses,relicDefinitions,activeRelics,initializeHeroSelection,selectHero,resetHero,canUseHeroAbility,canUseChargedAbility,updateHeroAbilityUI,useHeroAbility,useMageChargedAbility,checkRogueDodge,addRelic,getRandomRelics});
+Object.assign(window,{currentHeroClass,heroClasses,relicDefinitions,activeRelics,initializeHeroSelection,selectHero,resetHero,canUseHeroAbility,canUseChargedAbility,updateHeroAbilityUI,useHeroAbility,useMageChargedAbility,checkRogueDodge,addRelic,getRandomRelics,restoreMana});

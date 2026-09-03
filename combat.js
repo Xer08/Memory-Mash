@@ -26,7 +26,8 @@ function applyRelicBonuses(type,effect){
 function resolveRuneEffect(type){
   const effect=runeEffects[type];if(!effect)return;
   gameStats.pairsMatched++;
-  if(player.maxMana>0){player.mana=Math.min(player.maxMana,player.mana+5);showFloatingText("+5 MP","charge",25,62);}
+  if(typeof restoreMana==="function")restoreMana(5);
+  else if(player.maxMana>0)player.mana=Math.min(player.maxMana,player.mana+5);
   const e=applyRelicBonuses(type,effect);
   if(type==="sword"){
     let dmg=player.baseAttack+e.damage;
@@ -89,8 +90,9 @@ function enemyAttack(){
     }
     const damage=enemy.attackDamage;
     const hpBefore=player.currentHealth;
+    const shieldBefore=player.shield;
     takeDamage(damage);
-    const received=Math.max(0,hpBefore-player.currentHealth);
+    const received=Math.max(0,(shieldBefore-player.shield)+(hpBefore-player.currentHealth));
     showFloatingText(`-${damage}`,"enemy",73,35);
     if(currentHeroClass==="warrior" && received>0 && player.mana>=5 && player.currentHealth>0){
       const reflected=Math.max(1,Math.round(received*.20));
@@ -125,19 +127,17 @@ function boardInputLock(locked){
 }
 function checkCombatEnd(){
   if(enemy.currentHealth<=0){
-    if(player.maxMana>0){
-      player.mana=player.maxMana;
-      showFloatingText("✨ MP COMPLETO","charge",50,30);
-      setCombatMessage("¡Enemigo derrotado! Recuperas todo tu maná.");
-      updateCombatUI();
-    }
+    player.mana=player.maxMana;
+    showFloatingText("✨ MP COMPLETO","charge",50,30);
+    setCombatMessage("¡Enemigo derrotado! Recuperas todo tu maná.");
+    updateCombatUI();
     setState(GameState.VICTORY);handleRoomComplete()
   } else if(player.currentHealth<=0){setState(GameState.GAME_OVER);showGameOverModal()}
 }
 function updateCombatUI(){
   const hp=Math.max(0,player.currentHealth/player.maxHealth*100),sh=Math.min(100,player.shield/player.maxHealth*100),eh=Math.max(0,enemy.currentHealth/enemy.maxHealth*100);
   setWidth("player-hp-fill",hp);setWidth("player-shield-fill",sh);setWidth("enemy-hp-fill",eh);setWidth("ultimate-fill",player.ultimateCharge);
-  text("player-hp-text",`${player.currentHealth}/${player.maxHealth}`);text("player-shield-text",player.shield);text("enemy-hp-text",`${enemy.currentHealth}/${enemy.maxHealth}`);text("enemy-attack-text",enemy.attackDamage);text("ultimate-text",`${player.ultimateCharge}%`);text("mana-text",`${player.mana}/${player.maxMana} MP`);text("mana-cost-hint",currentHeroClass==="mage"?`Costo: ${heroClasses.mage.abilityCost} MP`:"—");
+  text("player-hp-text",`${player.currentHealth}/${player.maxHealth}`);text("player-shield-text",player.shield);text("enemy-hp-text",`${enemy.currentHealth}/${enemy.maxHealth}`);text("enemy-attack-text",enemy.attackDamage);text("ultimate-text",`${player.ultimateCharge}%`);text("mana-text",`${player.mana}/${player.maxMana} MP`);const activeCost=(currentHeroClass&&heroClasses[currentHeroClass]?.abilityCost)||0;text("mana-cost-hint",activeCost?`Habilidad: ${activeCost} MP`:"—");
   setWidth("mana-fill",player.maxMana?player.mana/player.maxMana*100:0);
   text("pairs-text",`${window.matchedPairs||0}/${window.requiredPairs||7} parejas`);text("enemy-status-text",enemyFrozenTurns>0?"❄️ CONGELADO":"");text("relics-text",`💎 ${(window.activeRelics||[]).length}`);
   updateAbilityButton()
@@ -145,7 +145,12 @@ function updateCombatUI(){
 function setWidth(id,v){const el=document.getElementById(id);if(el)el.style.width=`${Math.max(0,Math.min(100,v))}%`}
 function text(id,v){const el=document.getElementById(id);if(el)el.textContent=v}
 function updateAbilityButton(){const b=document.getElementById("hero-ability-btn");if(!b)return;const ready=typeof canUseHeroAbility==="function"&&canUseHeroAbility();b.disabled=!ready;b.classList.toggle("ready",ready);if(typeof updateHeroAbilityUI==="function")updateHeroAbilityUI()}
-function setCombatMessage(msg){text("combat-message",msg)}
+function setCombatMessage(msg){
+  const el=document.getElementById("combat-message");
+  if(!el)return;
+  el.textContent=msg;
+  el.classList.toggle("enemy-turn-message",String(msg).includes("TURNO DEL ENEMIGO"));
+}
 function handleRoomComplete(){gameStats.roomsCleared=Math.max(gameStats.roomsCleared,getCurrentRoom());if(getCurrentRoom()>=10){setTimeout(showVictoryModal,450);playVictorySound();hapticFeedback("victory")}else setTimeout(showRoomModal,450)}
 function showGameOverModal(){text("final-rooms",gameStats.roomsCleared);text("final-pairs",gameStats.pairsMatched);text("final-damage",gameStats.totalDamageDealt);showModal("game-over-modal");playGameOverSound();hapticFeedback("gameOver")}
 function showVictoryModal(){text("victory-rooms",gameStats.roomsCleared);text("victory-pairs",gameStats.pairsMatched);text("victory-damage",gameStats.totalDamageDealt);showModal("victory-modal")}

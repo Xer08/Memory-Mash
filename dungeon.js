@@ -17,6 +17,7 @@ function advanceRoom(){
     const startingMana=heroClasses[currentHeroClass]?.maxMana||0;
     player.maxMana=startingMana;
     player.mana=startingMana;
+    if(typeof updateHeroAbilityUI==="function")updateHeroAbilityUI();
   }
   healBetweenRooms();resetBoard();resetState();updateCombatUI();setCombatMessage(`Sala ${currentRoom}: ${enemy.maxHealth} HP · ${enemy.attackDamage} daño.`)
 }

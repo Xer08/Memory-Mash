@@ -1,4 +1,4 @@
-const CACHE_NAME = "rune-clash-v14";
+const CACHE_NAME = "rune-clash-v16";
 const ASSETS = [
   "./", "./index.html", "./manifest.json",
   "./css/theme.css", "./css/board.css", "./css/effects.css",
