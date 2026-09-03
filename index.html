@@ -1,127 +1,135 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="theme-color" content="#0a0a10">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Rune Clash - Memory Tactics</title>
-    <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="css/theme.css">
-    <link rel="stylesheet" href="css/board.css">
-    <link rel="stylesheet" href="css/effects.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="theme-color" content="#0a0a10">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>Rune Clash — Memory Tactics</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="stylesheet" href="./css/theme.css">
+  <link rel="stylesheet" href="./css/board.css">
+  <link rel="stylesheet" href="./css/effects.css">
 </head>
 <body>
-    <div id="game-container">
-        <!-- Combat HUD -->
-        <div id="combat-hud">
-            <div class="hud-section player-hud">
-                <div class="avatar player-avatar">⚔️</div>
-                <div class="stats-container">
-                    <div class="stat-bar health-bar">
-                        <div class="bar-fill health-fill" id="player-health-fill"></div>
-                        <span class="stat-text" id="player-health-text">100/100</span>
-                    </div>
-                    <div class="stat-bar shield-bar">
-                        <div class="bar-fill shield-fill" id="player-shield-fill"></div>
-                        <span class="stat-text" id="player-shield-text">0</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="hud-section center-hud">
-                <div class="turn-indicator">
-                    <span class="turn-label">Turno</span>
-                    <span class="turn-number" id="turn-number">1</span>
-                </div>
-                <button class="hero-ability-btn" id="hero-ability-btn">
-                    <span class="ability-icon">✨</span>
-                    <span class="ability-text">Habilidad</span>
-                </button>
-            </div>
-            
-            <div class="hud-section enemy-hud">
-                <div class="enemy-icon">👹</div>
-                <div class="enemy-stats">
-                    <div class="stat-bar enemy-health-bar">
-                        <div class="bar-fill enemy-health-fill" id="enemy-health-fill"></div>
-                        <span class="stat-text" id="enemy-health-text">50/50</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Game Board -->
-        <div id="board"></div>
-
-        <!-- Room Progress -->
-        <div class="room-indicator">
-            <span class="room-label">Sala</span>
-            <span class="room-number" id="room-number">1</span>
-        </div>
+<main id="app">
+  <section id="hero-screen" class="screen">
+    <div class="brand">
+      <div class="brand-rune">✦</div>
+      <h1>RUNE CLASH</h1>
+      <p>MEMORY TACTICS</p>
     </div>
-
-    <!-- Modals -->
-    <div id="modal-overlay" class="modal-overlay hidden">
-        <div id="room-modal" class="modal room-modal hidden">
-            <h2>¡Sala Completada!</h2>
-            <p>Elige una reliquia:</p>
-            <div class="relics-container" id="relics-container"></div>
-        </div>
-        
-        <div id="game-over-modal" class="modal game-over-modal hidden">
-            <h2>💀 Game Over</h2>
-            <div class="stats-summary">
-                <p>Salas superadas: <span id="final-rooms">0</span></p>
-                <p>Pares acertados: <span id="final-pairs">0</span></p>
-                <p>Daño total infligido: <span id="final-damage">0</span></p>
-            </div>
-            <button class="restart-btn" id="restart-btn">Reintentar</button>
-        </div>
-        
-        <div id="victory-modal" class="modal victory-modal hidden">
-            <h2>🏆 ¡Victoria!</h2>
-            <p>Has derrotado a todos los enemigos de la mazmorra</p>
-            <div class="stats-summary">
-                <p>Salas superadas: <span id="victory-rooms">0</span></p>
-                <p>Pares acertados: <span id="victory-pairs">0</span></p>
-                <p>Daño total infligido: <span id="victory-damage">0</span></p>
-            </div>
-            <button class="restart-btn" id="victory-restart-btn">Jugar de nuevo</button>
-        </div>
+    <div class="hero-panel">
+      <h2>Elige tu héroe</h2>
+      <div class="hero-grid">
+        <button class="hero-card" data-hero="warrior">
+          <span class="hero-icon">⚔️</span><strong>Guerrero</strong>
+          <small>El exceso de curación se convierte en escudo.</small>
+        </button>
+        <button class="hero-card" data-hero="mage">
+          <span class="hero-icon">🔮</span><strong>Mago</strong>
+          <small>Usa maná para revelar 2 runas durante 1 segundo.</small>
+        </button>
+        <button class="hero-card" data-hero="rogue">
+          <span class="hero-icon">🗡️</span><strong>Pícaro</strong>
+          <small>25% de probabilidad de conservar el turno al fallar.</small>
+        </button>
+      </div>
     </div>
+    <p class="tip">10 salas · reliquias · combate por memoria · diseñado para móvil</p>
+  </section>
 
-    <!-- Hero Selection Modal -->
-    <div id="hero-selection-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); display: flex; align-items: center; justify-content: center; z-index: 3000;">
-        <div class="modal-content">
-            <h2>Elige tu Héroe</h2>
-            <div class="hero-container">
-                <div class="hero-card" data-hero="warrior">
-                    <div class="hero-icon">⚔️</div>
-                    <h3>Guerrero</h3>
-                    <p>El exceso de curación se convierte en escudo</p>
-                </div>
-                <div class="hero-card" data-hero="mage">
-                    <div class="hero-icon">🔮</div>
-                    <h3>Mago</h3>
-                    <p>Puede revelar cartas temporalmente</p>
-                </div>
-                <div class="hero-card" data-hero="rogue">
-                    <div class="hero-icon">🗡️</div>
-                    <h3>Pícaro</h3>
-                    <p>25% de probabilidad de no perder turno al fallar</p>
-                </div>
-            </div>
+  <section id="game-screen" class="screen hidden">
+    <header id="combat-hud">
+      <div class="hud-actor">
+        <div class="avatar" id="player-avatar">⚔️</div>
+        <div class="hud-stats">
+          <div class="name-row"><span id="player-name">Héroe</span><span id="player-hp-text">100/100</span></div>
+          <div class="bar"><i id="player-hp-fill"></i></div>
+          <div class="name-row compact"><span>🛡️ Escudo</span><span id="player-shield-text">0</span></div>
+          <div class="bar shield"><i id="player-shield-fill"></i></div>
+          <div class="mana-row"><span>⚡ Carga</span><span id="ultimate-text">0%</span></div>
+          <div class="bar ultimate"><i id="ultimate-fill"></i></div>
         </div>
-    </div>
+      </div>
 
-    <script src="js/state.js"></script>
-    <script src="js/board.js"></script>
-    <script src="js/combat.js"></script>
-    <script src="js/hero.js"></script>
-    <script src="js/dungeon.js"></script>
-    <script src="js/juiciness.js"></script>
-    <script src="js/main.js"></script>
+      <div class="hud-center">
+        <div class="room-badge">SALA <b id="room-number">1</b>/10</div>
+        <div class="turn-badge">TURNO <b id="turn-number">1</b></div>
+      </div>
+
+      <div class="hud-actor enemy">
+        <div class="avatar enemy-avatar">👹</div>
+        <div class="hud-stats">
+          <div class="name-row"><span>Enemigo</span><span id="enemy-hp-text">70/70</span></div>
+          <div class="bar enemy-bar"><i id="enemy-hp-fill"></i></div>
+          <div class="enemy-attack">⚔️ <span id="enemy-attack-text">10</span> daño</div>
+        </div>
+      </div>
+    </header>
+
+    <div class="combat-message" id="combat-message">Encuentra una pareja de runas.</div>
+
+    <div id="board" aria-label="Tablero de memoria"></div>
+
+    <footer class="game-footer">
+      <div class="progress-copy"><span id="pairs-text">0/8 parejas</span><span id="relics-text">💎 0</span></div>
+      <button id="hero-ability-btn" class="ability-btn" type="button" disabled>
+        <span id="ability-icon">✨</span><span id="ability-label">Habilidad</span><b id="ability-cost">0</b>
+      </button>
+      <button id="quit-btn" class="secondary-btn" type="button">Salir</button>
+    </footer>
+  </section>
+</main>
+
+<div id="modal-overlay" class="modal-overlay hidden">
+  <div id="room-modal" class="modal hidden">
+    <div class="modal-rune">✦</div>
+    <h2>¡Sala superada!</h2>
+    <p id="room-summary">Has derrotado al enemigo.</p>
+    <h3>Elige una reliquia</h3>
+    <div id="relics-container" class="relics-container"></div>
+  </div>
+
+  <div id="game-over-modal" class="modal hidden">
+    <div class="modal-rune danger">☠</div>
+    <h2>Game Over</h2>
+    <p>La mazmorra ha reclamado tu runa.</p>
+    <div class="result-grid">
+      <span>Salas</span><b id="final-rooms">0</b>
+      <span>Parejas</span><b id="final-pairs">0</b>
+      <span>Daño</span><b id="final-damage">0</b>
+    </div>
+    <button id="restart-btn" class="primary-btn" type="button">Reintentar</button>
+  </div>
+
+  <div id="victory-modal" class="modal hidden">
+    <div class="modal-rune victory">✦</div>
+    <h2>¡Victoria total!</h2>
+    <p>Has conquistado las 10 salas de Rune Clash.</p>
+    <div class="result-grid">
+      <span>Salas</span><b id="victory-rooms">10</b>
+      <span>Parejas</span><b id="victory-pairs">0</b>
+      <span>Daño</span><b id="victory-damage">0</b>
+    </div>
+    <button id="victory-restart-btn" class="primary-btn" type="button">Nueva partida</button>
+  </div>
+
+  <div id="confirm-modal" class="modal small hidden">
+    <h2>¿Salir de la mazmorra?</h2>
+    <p>Perderás el progreso de esta partida.</p>
+    <div class="modal-actions"><button id="cancel-quit" class="secondary-btn">Continuar</button><button id="confirm-quit" class="primary-btn">Salir</button></div>
+  </div>
+</div>
+
+<script src="./js/state.js"></script>
+<script src="./js/juiciness.js"></script>
+<script src="./js/combat.js"></script>
+<script src="./js/hero.js"></script>
+<script src="./js/board.js"></script>
+<script src="./js/dungeon.js"></script>
+<script src="./js/main.js"></script>
 </body>
 </html>
