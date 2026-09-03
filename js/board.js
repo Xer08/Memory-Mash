@@ -3,7 +3,15 @@ const CardIcons={sword:"⚔️",shield:"🛡️",potion:"🧪",trap:"☠️",ult
 let cards=[],flippedCards=[],matchedPairs=0,totalPairs=8,requiredPairs=7,boardLocked=false,lastTouchTime=0;
 function fisherYates(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function generateDeck(){const types=["sword","sword","sword","sword","shield","shield","shield","shield","potion","potion","potion","potion","trap","trap","ultimate","ultimate"];const deck=[];types.forEach((type,i)=>deck.push({id:i,type,icon:CardIcons[type],pairId:`${type}-${Math.floor(i/(type==="sword"||type==="shield"||type==="potion"?2:2))}`}));return fisherYates(deck)}
-function initializeBoard(){const board=document.getElementById("board");cards=generateDeck();flippedCards=[];matchedPairs=0;window.matchedPairs=0;boardLocked=false;board.innerHTML="";cards.forEach(c=>board.appendChild(createCardElement(c)));updateCombatUI()}
+function initializeBoard(withPreview=true){
+  const board=document.getElementById("board");
+  if(!board)return;
+  if(typeof previewTimer!=="undefined" && previewTimer){clearTimeout(previewTimer);previewTimer=null}
+  cards=generateDeck();flippedCards=[];matchedPairs=0;window.matchedPairs=0;boardLocked=false;board.innerHTML="";
+  cards.forEach(c=>board.appendChild(createCardElement(c)));
+  if(withPreview && typeof startBoardPreview==="function")startBoardPreview();
+  updateCombatUI();
+}
 function createCardElement(card){const el=document.createElement("button");el.type="button";el.className="card";el.dataset.id=card.id;el.dataset.type=card.type;el.dataset.state="hidden";el.setAttribute("aria-label","Runa oculta");
   el.innerHTML=`<span class="card-face card-back"></span><span class="card-face card-front">${card.icon}</span>`;
   const activate=e=>{if(e.type==="click"&&Date.now()-lastTouchTime<450)return;if(e.type==="touchstart")lastTouchTime=Date.now();handleCardClick(el)};
@@ -47,12 +55,12 @@ function evaluateMatch(){
     },800)
   }
 }
-function resetBoard(){initializeBoard()}
+function resetBoard(){initializeBoard(true)}
 function onRuneResolved(){
   flippedCards=[];boardLocked=false;
   if(enemy.currentHealth<=0){checkCombatEnd();return}
   setState(GameState.PLAYER_TURN_IDLE);setCombatMessage("¡Pareja acertada! Encuentra la siguiente.");
-  if(matchedPairs>=requiredPairs){setCombatMessage("¡Tablero despejado! La trampa no era necesaria. Nueva oleada…");setTimeout(initializeBoard,700)}
+  if(matchedPairs>=requiredPairs){setCombatMessage("¡Tablero despejado! La trampa no era necesaria. Nueva oleada…");setTimeout(()=>initializeBoard(true),700)}
 }
 document.addEventListener("cardMatch",onCardMatch);
 function onCardMatch(e){resolveRuneEffect(e.detail.cardType)}

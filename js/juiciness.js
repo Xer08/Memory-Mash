@@ -29,7 +29,13 @@ function hapticFeedback(type){
 function showFloatingText(text,type="damage",x=50,y=50){
   const el=document.createElement("div");el.className=`floating-number ${type}`;el.textContent=text;el.style.left=`${x}%`;el.style.top=`${y}%`;document.body.appendChild(el);setTimeout(()=>el.remove(),900)
 }
-function triggerScreenShake(){const el=document.getElementById("game-screen");el.classList.remove("screen-shake");void el.offsetWidth;el.classList.add("screen-shake")}
+function triggerScreenShake(){
+  const el=document.getElementById("game-screen");
+  if(!el)return;
+  el.classList.remove("screen-shake");void el.offsetWidth;el.classList.add("screen-shake");
+  clearTimeout(window.__shakeCleanup);
+  window.__shakeCleanup=setTimeout(()=>el.classList.remove("screen-shake"),380);
+}
 function flashScreen(){const el=document.getElementById("game-screen");el.classList.add("hit-flash");setTimeout(()=>el.classList.remove("hit-flash"),250)}
 function initJuiciness(){const once=()=>initAudio();document.addEventListener("pointerdown",once,{once:true})}
 Object.assign(window,{initAudio,initJuiciness,playCardFlipSound,playMatchSound,playMismatchSound,playAttackSound,playDamageSound,playShieldSound,playHealSound,playChargeSound,playRevealSound,playVictorySound,playGameOverSound,hapticFeedback,showFloatingText,triggerScreenShake,flashScreen});

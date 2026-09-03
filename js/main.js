@@ -5,11 +5,10 @@ function startGame(){
   if(previewTimer){clearTimeout(previewTimer);previewTimer=null}
   initializeDungeon();
   createEnemy(1);
-  initializeBoard();
+  initializeBoard(true);
   resetState();
   currentTurn=1;
   updateTurnDisplay();
-  startBoardPreview();
   updateCombatUI();
 }
 
@@ -43,16 +42,19 @@ function resetRun(){
   applyHeroStats();
   initializeDungeon();
   createEnemy(1);
-  initializeBoard();
+  initializeBoard(true);
   resetState();
   currentTurn=1;
   updateTurnDisplay();
-  startBoardPreview();
   updateCombatUI();
 }
 function exitToHeroSelection(){
   if(previewTimer){clearTimeout(previewTimer);previewTimer=null}
   hideModals();
+  const gameScreen=document.getElementById("game-screen");
+  if(gameScreen){gameScreen.classList.remove("screen-shake","hit-flash");void gameScreen.offsetWidth}
+  const board=document.getElementById("board");
+  if(board)board.classList.remove("memory-preview");
   resetPlayer();
   resetHero();
   initializeDungeon();

@@ -87,8 +87,15 @@ function boardInputLock(locked){
   document.querySelectorAll("#board .card").forEach(card=>card.classList.toggle("locked",locked));
 }
 function checkCombatEnd(){
-  if(enemy.currentHealth<=0){setState(GameState.VICTORY);handleRoomComplete()}
-  else if(player.currentHealth<=0){setState(GameState.GAME_OVER);showGameOverModal()}
+  if(enemy.currentHealth<=0){
+    if(currentHeroClass==="mage" && player.maxMana>0){
+      player.mana=player.maxMana;
+      showFloatingText("✨ MP COMPLETO","charge",50,30);
+      setCombatMessage("¡Enemigo derrotado! El Mago recupera todo su maná.");
+      updateCombatUI();
+    }
+    setState(GameState.VICTORY);handleRoomComplete()
+  } else if(player.currentHealth<=0){setState(GameState.GAME_OVER);showGameOverModal()}
 }
 function updateCombatUI(){
   const hp=Math.max(0,player.currentHealth/player.maxHealth*100),sh=Math.min(100,player.shield/player.maxHealth*100),eh=Math.max(0,enemy.currentHealth/enemy.maxHealth*100);
