@@ -63,3 +63,34 @@ button,.name-row,.mana-row,.enemy-attack,.room-badge,.turn-badge{letter-spacing:
 .mana-visible span{font-weight:900;letter-spacing:.04em}
 .mana-visible strong{font-size:.78rem}
 @media(max-width:560px){.hud-stats{min-width:92px}.mana-visible{padding:3px 5px}.mana-visible strong{font-size:.74rem}.bar.mana{height:11px}}
+
+
+/* ===== Pixel-art UI / HUD refresh ===== */
+@import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;600;700&display=swap');
+:root{--ui-font:"Pixelify Sans",ui-sans-serif,system-ui,sans-serif}
+html,body{font-family:var(--ui-font);font-size:17px;line-height:1.35;font-weight:500;letter-spacing:.02em}
+button,.name-row,.mana-row,.enemy-attack,.room-badge,.turn-badge{font-family:var(--ui-font)}
+.brand h1{font-size:clamp(2.2rem,10vw,3.6rem);letter-spacing:.08em;line-height:1.05}
+.brand p{font-size:.9rem}
+.hero-panel h2{font-size:1.15rem}.hero-card strong{font-size:1.05rem}.hero-card small{font-size:.82rem}.tip{font-size:.78rem}
+#combat-hud{gap:12px}
+.avatar{width:50px;height:50px;font-size:1.65rem;border-radius:10px}
+.hud-stats{font-size:.95rem}.name-row{font-size:.88rem;font-weight:700}.name-row.compact{font-size:.84rem}
+.bar{height:11px;margin-top:4px;border-radius:6px}.mana-row{font-size:.84rem}.mana-visible{padding:4px 7px;border-radius:6px;margin-top:7px!important}.mana-visible strong{font-size:.9rem}.enemy-attack{font-size:.78rem}
+.room-badge,.turn-badge{font-size:.72rem;padding:6px 9px;border-radius:7px}
+.combat-message{font-size:.88rem;min-height:22px;font-weight:600}
+.game-footer{gap:9px}.progress-copy{font-size:.78rem}.ability-btn,.primary-btn,.secondary-btn{font-size:.82rem;padding:11px 13px;border-radius:9px}.ability-btn b{font-size:.72rem}.ability-hint{font-size:.75rem}
+.modal h2{font-size:1.35rem}.modal h3{font-size:.9rem}.modal p{font-size:.82rem}.relic-name{font-size:.9rem}.relic-description{font-size:.76rem}.result-grid{font-size:.82rem}
+@media(max-width:560px){
+  html,body{font-size:16px}
+  #game-screen{gap:7px}
+  #combat-hud{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:5px}
+  .avatar{width:40px;height:40px;font-size:1.35rem}
+  .hud-stats{min-width:96px;font-size:.86rem}
+  .name-row{font-size:.76rem}.name-row.compact{font-size:.73rem}
+  .mana-row{font-size:.74rem}.mana-visible{padding:4px 5px}.mana-visible strong{font-size:.82rem}.bar{height:10px}
+  .room-badge,.turn-badge{font-size:.66rem;padding:5px 6px}
+  .combat-message{font-size:.8rem}
+  .game-footer{gap:6px}.progress-copy{font-size:.7rem}.ability-btn,.primary-btn,.secondary-btn{font-size:.76rem;padding:10px 9px}.ability-btn b{font-size:.65rem}
+}
+@media(max-width:380px){.hud-stats{min-width:86px}.avatar{width:36px;height:36px}.game-footer .progress-copy{max-width:72px}.ability-btn{padding:9px 7px}.secondary-btn{padding:9px 8px}}

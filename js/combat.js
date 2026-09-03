@@ -95,7 +95,7 @@ function updateCombatUI(){
   setWidth("player-hp-fill",hp);setWidth("player-shield-fill",sh);setWidth("enemy-hp-fill",eh);setWidth("ultimate-fill",player.ultimateCharge);
   text("player-hp-text",`${player.currentHealth}/${player.maxHealth}`);text("player-shield-text",player.shield);text("enemy-hp-text",`${enemy.currentHealth}/${enemy.maxHealth}`);text("enemy-attack-text",enemy.attackDamage);text("ultimate-text",`${player.ultimateCharge}%`);text("mana-text",`${player.mana}/${player.maxMana} MP`);text("mana-cost-hint",currentHeroClass==="mage"?`Costo: ${heroClasses.mage.abilityCost} MP`:"—");
   setWidth("mana-fill",player.maxMana?player.mana/player.maxMana*100:0);
-  text("pairs-text",`${window.matchedPairs||0}/8 parejas`);text("relics-text",`💎 ${(window.activeRelics||[]).length}`);
+  text("pairs-text",`${window.matchedPairs||0}/${window.requiredPairs||7} parejas`);text("relics-text",`💎 ${(window.activeRelics||[]).length}`);
   updateAbilityButton()
 }
 function setWidth(id,v){const el=document.getElementById(id);if(el)el.style.width=`${Math.max(0,Math.min(100,v))}%`}

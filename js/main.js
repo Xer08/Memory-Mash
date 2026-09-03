@@ -1,54 +1,67 @@
-let currentTurn=1;
-function startGame(){
-  initializeDungeon();createEnemy(1);initializeBoard();resetState();currentTurn=1;updateTurnDisplay();setCombatMessage("Encuentra una pareja de runas.");updateCombatUI()
-}
-function updateTurnDisplay(){const el=document.getElementById("turn-number");if(el)el.textContent=currentTurn}
-function incrementTurn(){currentTurn++;updateTurnDisplay()}
-function resetRun(){
-  hideModals();
-  resetPlayer();
-  applyHeroStats();
-  initializeDungeon();
-  createEnemy(1);
-  initializeBoard();
-  resetState();
-  currentTurn=1;
-  updateTurnDisplay();
-  setCombatMessage("Nueva partida. Encuentra una pareja.");
-  updateCombatUI();
-}
-function exitToHeroSelection(){
-  hideModals();
-  resetPlayer();
-  resetHero();
-  initializeDungeon();
-  resetState();
-  currentTurn=1;
-  updateTurnDisplay();
-  document.getElementById("game-screen").classList.add("hidden");
-  document.getElementById("hero-screen").classList.remove("hidden");
-  document.getElementById("board").innerHTML="";
-}
-function setupMainEvents(){
-  initializeHeroSelection();
-  document.getElementById("hero-ability-btn").addEventListener("click",useHeroAbility);
-  document.getElementById("restart-btn").addEventListener("click",resetRun);
-  document.getElementById("victory-restart-btn").addEventListener("click",resetRun);
-  document.getElementById("quit-btn").addEventListener("click",()=>showModal("confirm-modal"));
-  document.getElementById("cancel-quit").addEventListener("click",hideModals);
-  document.getElementById("confirm-quit").addEventListener("click",exitToHeroSelection);
-  document.addEventListener("cardMatch",()=>incrementTurn());
-  document.addEventListener("stateChange",e=>{if(e.detail.state===GameState.GAME_OVER||e.detail.state===GameState.VICTORY)boardLocked=true});
-}
-function preventMobileGestures(){
-  document.addEventListener("contextmenu",e=>{if(e.target.closest("#board"))e.preventDefault()});
-  document.addEventListener("touchmove",e=>{if(e.target.closest("#board"))e.preventDefault()},{passive:false});
-  document.addEventListener("gesturestart",e=>e.preventDefault());
-  document.addEventListener("dblclick",e=>e.preventDefault());
-}
-function registerServiceWorker(){
-  if(!("serviceWorker"in navigator))return;
-  window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").then(r=>{r.update();console.log("SW listo",r.scope)}).catch(console.warn))
-}
-document.addEventListener("DOMContentLoaded",()=>{initJuiciness();setupMainEvents();preventMobileGestures();registerServiceWorker()});
-Object.assign(window,{startGame,resetRun,exitToHeroSelection,updateTurnDisplay,incrementTurn});
+const CACHE_NAME = "rune-clash-v8";
+const ASSETS = [
+  "./", "./index.html", "./manifest.json",
+  "./css/theme.css", "./css/board.css", "./css/effects.css",
+  "./js/state.js", "./js/juiciness.js", "./js/combat.js", "./js/hero.js",
+  "./js/board.js", "./js/dungeon.js", "./js/main.js",
+  "./icon-192.png", "./icon-512.png"
+];
+
+self.addEventListener("install", event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(ASSETS))
+      .then(() => self.skipWaiting())
+  );
+});
+
+self.addEventListener("activate", event => {
+  event.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))))
+      .then(() => self.clients.claim())
+  );
+});
+
+// Network First para HTML/CSS/JS: evita que GitHub Pages quede atrapado
+// mostrando una versión vieja después de un deploy. Si no hay red, usamos caché.
+self.addEventListener("fetch", event => {
+  const request = event.request;
+  if (request.method !== "GET") return;
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin) return;
+
+  const isAppCode = /\.(html?|css|js)$/.test(url.pathname) || request.mode === "navigate";
+
+  event.respondWith(
+    (isAppCode ? fetch(request, { cache: "no-store" }) : caches.match(request))
+      .then(response => {
+        if (response) {
+          if (isAppCode && response.ok) {
+            const clone = response.clone();
+            event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.put(request, clone)));
+          }
+          return response;
+        }
+        return fetch(request).then(networkResponse => {
+          if (networkResponse && networkResponse.ok) {
+            const clone = networkResponse.clone();
+            event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.put(request, clone)));
+          }
+          return networkResponse;
+        });
+      })
+      .catch(() => caches.match(request).then(cached => {
+        if (cached) return cached;
+        if (request.mode === "navigate") return caches.match("./index.html");
+        return new Response("Recurso no disponible sin conexión.", { status: 503 });
+      }))
+  );
+});
+
+self.addEventListener("message", event => {
+  if (event.data?.type === "SKIP_WAITING") self.skipWaiting();
+  if (event.data?.type === "CLEAR_CACHE") {
+    event.waitUntil(caches.keys().then(keys => Promise.all(keys.map(key => caches.delete(key)))));
+  }
+});
