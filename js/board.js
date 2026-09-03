@@ -24,11 +24,21 @@ function evaluateMatch(){
     a.classList.add("fail-pop");b.classList.add("fail-pop");playMismatchSound();hapticFeedback("mismatch");setCombatMessage("No coinciden…");
     setTimeout(()=>{a.classList.remove("flipped","fail-pop");b.classList.remove("flipped","fail-pop");a.dataset.state=b.dataset.state="hidden";flippedCards=[];boardLocked=false;
       const dodge=typeof checkRogueDodge==="function"&&checkRogueDodge();
-      if(dodge){setState(GameState.PLAYER_TURN_IDLE);setCombatMessage("¡Esquiva! Sigue buscando.");}
-      else if(setState(GameState.ENEMY_TURN)){
+      if(dodge){
+        setState(GameState.PLAYER_TURN_IDLE);
+        boardLocked=false;
+        setCombatMessage("¡Esquiva! Sigue buscando.");
+      }else{
         boardLocked=true;
-        setCombatMessage("El enemigo ataca…");
-        enemyAttack();
+        if(setState(GameState.ENEMY_TURN)){
+          setCombatMessage("👹 El enemigo ataca…");
+          enemyAttack();
+        }else{
+          // Recuperación de seguridad ante cualquier estado inesperado.
+          boardLocked=false;
+          setState(GameState.PLAYER_TURN_IDLE);
+          setCombatMessage("Tu turno: encuentra una pareja.");
+        }
       }
     },800)
   }

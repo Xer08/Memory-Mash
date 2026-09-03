@@ -16,7 +16,19 @@ const relicDefinitions={
 };
 function initializeHeroSelection(){document.querySelectorAll(".hero-card").forEach(c=>c.addEventListener("click",()=>selectHero(c.dataset.hero)))}
 function selectHero(hero){if(!heroClasses[hero])return;currentHeroClass=hero;window.currentHeroClass=currentHeroClass;applyHeroStats();document.getElementById("hero-screen").classList.add("hidden");document.getElementById("game-screen").classList.remove("hidden");startGame()}
-function applyHeroStats(){const h=heroClasses[currentHeroClass];player.maxHealth=h.maxHealth;player.currentHealth=h.maxHealth;player.baseAttack=h.attack;player.mana=h.maxMana||0;player.maxMana=h.maxMana||0;activeRelics=[];window.activeRelics=activeRelics;window.currentHeroClass=currentHeroClass;document.getElementById("player-avatar").textContent=h.icon;document.getElementById("player-name").textContent=h.name;updateHeroAbilityUI()}
+function applyHeroStats(){
+  const h=heroClasses[currentHeroClass];
+  // Una selección de héroe siempre representa el comienzo de una run nueva.
+  // Nunca heredamos escudo, carga, maná ni reliquias de la partida anterior.
+  Object.assign(player,{
+    maxHealth:h.maxHealth,currentHealth:h.maxHealth,shield:0,baseAttack:h.attack,
+    ultimateCharge:0,maxUltimateCharge:100,mana:h.maxMana||0,maxMana:h.maxMana||0
+  });
+  activeRelics=[];window.activeRelics=activeRelics;window.currentHeroClass=currentHeroClass;
+  const avatar=document.getElementById("player-avatar"),name=document.getElementById("player-name");
+  if(avatar)avatar.textContent=h.icon;if(name)name.textContent=h.name;
+  updateHeroAbilityUI();updateCombatUI();
+}
 function resetHero(){currentHeroClass=null;activeRelics=[];window.currentHeroClass=null;window.activeRelics=activeRelics}
 function canUseHeroAbility(){if(currentHeroClass==="mage")return player.mana>=heroClasses.mage.abilityCost&&getCurrentState()===GameState.PLAYER_TURN_IDLE;if(currentHeroClass==="warrior"||currentHeroClass==="rogue")return player.ultimateCharge>=100&&getCurrentState()===GameState.PLAYER_TURN_IDLE;return false}
 function updateHeroAbilityUI(){const h=heroClasses[currentHeroClass||"warrior"],b=document.getElementById("hero-ability-btn");if(!b)return;document.getElementById("ability-icon").textContent=h.abilityIcon;document.getElementById("ability-label").textContent=h.ability;if(currentHeroClass==="mage"){document.getElementById("ability-cost").textContent=`${h.abilityCost} MP`}else{document.getElementById("ability-cost").textContent="100%"}}

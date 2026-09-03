@@ -4,7 +4,7 @@
   --line:#2a2a3c;--radius:18px;--safe-top:env(safe-area-inset-top);--safe-bottom:env(safe-area-inset-bottom);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;width:100%;min-height:100%;background:var(--bg);color:var(--text);font-family:"Courier New",ui-monospace,monospace;overscroll-behavior:none}
+html,body{margin:0;width:100%;min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;overscroll-behavior:none}
 body{min-height:100svh;overflow:hidden;touch-action:manipulation}
 button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulation}
 button:disabled{cursor:not-allowed}
@@ -42,3 +42,18 @@ button:disabled{cursor:not-allowed}
 .bar.mana i{background:linear-gradient(90deg,#4dc8ff,#8a2be2)}
 .mana-row{display:flex;justify-content:space-between;align-items:center;font-size:.68rem;margin:.18rem 0}
 #mana-cost-hint{opacity:.8}
+
+/* Legibilidad móvil: texto limpio sobre fondo OLED oscuro. */
+body{font-weight:500;line-height:1.35;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+button,.name-row,.mana-row,.enemy-attack,.room-badge,.turn-badge{letter-spacing:.01em}
+.brand h1{font-weight:900}
+.brand p{font-weight:800}
+.hud-stats{font-size:.82rem}
+.name-row{font-size:.76rem}
+.mana-row{font-size:.72rem;font-weight:700;color:#8edcff}
+.mana-row strong{color:#d8f4ff;font-weight:900;font-variant-numeric:tabular-nums}
+.bar.mana{height:10px;border-color:#31516a;box-shadow:inset 0 0 8px #000}
+.bar.mana i{background:linear-gradient(90deg,#35bfff,#8a2be2);box-shadow:0 0 12px #35bfff}
+.mana-visible{margin-top:6px!important}
+.ability-hint{font-size:.65rem;color:#8edcff;white-space:nowrap}
+@media(max-width:560px){.name-row{font-size:.7rem}.mana-row{font-size:.68rem}.mana-visible{margin-top:7px!important}.ability-hint{display:none}}

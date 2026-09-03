@@ -2,6 +2,7 @@ const player={maxHealth:100,currentHealth:100,shield:0,baseAttack:15,ultimateCha
 const enemy={maxHealth:70,currentHealth:70,attackDamage:10};
 let gameStats={roomsCleared:0,pairsMatched:0,totalDamageDealt:0,totalDamageTaken:0};
 let enemyAttackTimer=null;
+let enemyAttackSequence=0;
 const runeEffects={
   sword:{name:"Espada",damage:15},shield:{name:"Escudo",shield:14},potion:{name:"Poción",healing:18},
   trap:{name:"Trampa",damage:12},ultimate:{name:"Carga Suprema",charge:25}
@@ -49,24 +50,39 @@ function takeDamage(amount){
 }
 function chargeUltimate(amount){player.ultimateCharge=Math.min(player.maxUltimateCharge,player.ultimateCharge+amount);playChargeSound();hapticFeedback("ultimate");updateAbilityButton()}
 function enemyAttack(){
-  if(getCurrentState()!==GameState.ENEMY_TURN)return false;
+  // El turno enemigo siempre debe resolverse: si por cualquier motivo la
+  // transición no quedó aplicada, la forzamos aquí y evitamos dejar el juego bloqueado.
+  if(getCurrentState()!==GameState.ENEMY_TURN && !setState(GameState.ENEMY_TURN))return false;
   if(enemyAttackTimer)clearTimeout(enemyAttackTimer);
-  setCombatMessage("El enemigo prepara su ataque…");
+  const sequence=++enemyAttackSequence;
+  boardInputLock(true);
+  setCombatMessage("👹 El enemigo prepara su ataque…");
+  updateCombatUI();
   enemyAttackTimer=setTimeout(()=>{
     enemyAttackTimer=null;
-    if(getCurrentState()!==GameState.ENEMY_TURN)return;
-    takeDamage(enemy.attackDamage);
-    showFloatingText(`-${enemy.attackDamage}`,"enemy",73,35);
+    if(sequence!==enemyAttackSequence)return;
+    if(getCurrentState()!==GameState.ENEMY_TURN){
+      // Recuperación de seguridad: nunca dejamos al jugador sin turno.
+      setState(GameState.ENEMY_TURN);
+    }
+    const damage=enemy.attackDamage;
+    takeDamage(damage);
+    showFloatingText(`-${damage}`,"enemy",73,35);
     if(player.currentHealth<=0){
       setState(GameState.GAME_OVER);
+      boardInputLock(true);
       showGameOverModal();
     }else{
       setState(GameState.PLAYER_TURN_IDLE);
-      setCombatMessage("Tu turno: encuentra una pareja.");
+      boardInputLock(false);
+      setCombatMessage("⚔️ Tu turno: encuentra una pareja.");
     }
     updateCombatUI();
   },600);
   return true;
+}
+function boardInputLock(locked){
+  document.querySelectorAll("#board .card").forEach(card=>card.classList.toggle("locked",locked));
 }
 function checkCombatEnd(){
   if(enemy.currentHealth<=0){setState(GameState.VICTORY);handleRoomComplete()}
