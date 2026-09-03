@@ -1,67 +1,90 @@
-const CACHE_NAME = "rune-clash-v8";
-const ASSETS = [
-  "./", "./index.html", "./manifest.json",
-  "./css/theme.css", "./css/board.css", "./css/effects.css",
-  "./js/state.js", "./js/juiciness.js", "./js/combat.js", "./js/hero.js",
-  "./js/board.js", "./js/dungeon.js", "./js/main.js",
-  "./icon-192.png", "./icon-512.png"
-];
+let enemyAttackTimer=null;
+let runStarted=false;
 
-self.addEventListener("install", event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(ASSETS))
-      .then(() => self.skipWaiting())
-  );
-});
+function startGame(){
+  runStarted=true;
+  if(typeof initAudio==='function')initAudio();
+  if(typeof initJuiciness==='function')initJuiciness();
+  if(typeof initializeCombat==='function')initializeCombat();
+  if(typeof initializeDungeon==='function')initializeDungeon();
+  if(typeof createEnemy==='function')createEnemy(1);
+  if(typeof initializeBoard==='function')initializeBoard(true);
+  if(typeof resetState==='function')resetState();
+  if(typeof setCombatMessage==='function')setCombatMessage("Memoriza las runas…");
+  updateRoomDisplaySafe();
+  if(typeof updateCombatUI==='function')updateCombatUI();
+}
 
-self.addEventListener("activate", event => {
-  event.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))))
-      .then(() => self.clients.claim())
-  );
-});
+function resetRun(){
+  if(typeof resetPlayer==='function')resetPlayer();
+  if(typeof applyHeroStats==='function')applyHeroStats();
+  if(typeof initializeDungeon==='function')initializeDungeon();
+  if(typeof createEnemy==='function')createEnemy(1);
+  if(typeof initializeBoard==='function')initializeBoard(true);
+  if(typeof resetState==='function')resetState();
+  if(typeof updateCombatUI==='function')updateCombatUI();
+}
 
-// Network First para HTML/CSS/JS: evita que GitHub Pages quede atrapado
-// mostrando una versión vieja después de un deploy. Si no hay red, usamos caché.
-self.addEventListener("fetch", event => {
-  const request = event.request;
-  if (request.method !== "GET") return;
-  const url = new URL(request.url);
-  if (url.origin !== self.location.origin) return;
+function exitToHeroSelection(){
+  if(typeof resetPlayer==='function')resetPlayer();
+  if(typeof resetHero==='function')resetHero();
+  if(typeof initializeDungeon==='function')initializeDungeon();
+  if(typeof resetState==='function')resetState();
+  runStarted=false;
+  document.getElementById("game-screen")?.classList.add("hidden");
+  document.getElementById("hero-screen")?.classList.remove("hidden");
+}
 
-  const isAppCode = /\.(html?|css|js)$/.test(url.pathname) || request.mode === "navigate";
+function updateRoomDisplaySafe(){
+  if(typeof updateRoomDisplay==='function')updateRoomDisplay();
+}
 
-  event.respondWith(
-    (isAppCode ? fetch(request, { cache: "no-store" }) : caches.match(request))
-      .then(response => {
-        if (response) {
-          if (isAppCode && response.ok) {
-            const clone = response.clone();
-            event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.put(request, clone)));
+function showModal(id){
+  document.querySelectorAll(".modal-overlay").forEach(m=>m.classList.add("hidden"));
+  const modal=document.getElementById(id);
+  if(modal)modal.classList.remove("hidden");
+}
+function hideModals(){document.querySelectorAll(".modal-overlay").forEach(m=>m.classList.add("hidden"));}
+
+function wireMainEvents(){
+  if(typeof initializeHeroSelection==='function')initializeHeroSelection();
+
+  const ability=document.getElementById("hero-ability-btn");
+  ability?.addEventListener("click",()=>useHeroAbility());
+
+  document.getElementById("restart-btn")?.addEventListener("click",()=>{hideModals();resetRun();});
+  document.getElementById("victory-restart-btn")?.addEventListener("click",()=>{hideModals();resetRun();});
+  document.getElementById("quit-btn")?.addEventListener("click",()=>showModal("quit-modal"));
+  document.getElementById("cancel-quit-btn")?.addEventListener("click",hideModals);
+  document.getElementById("confirm-quit-btn")?.addEventListener("click",()=>{hideModals();exitToHeroSelection();});
+
+  document.addEventListener("click",e=>{
+    const relic=e.target.closest(".relic-card");
+    if(relic && typeof chooseRelic==='function')chooseRelic(relic.dataset.relic);
+  });
+
+  // Evita zoom/scroll accidental en móvil, pero conserva el tap normal de botones.
+  document.addEventListener("gesturestart",e=>e.preventDefault(),{passive:false});
+  document.addEventListener("gesturechange",e=>e.preventDefault(),{passive:false});
+  document.addEventListener("gestureend",e=>e.preventDefault(),{passive:false});
+}
+
+document.addEventListener("DOMContentLoaded",()=>{
+  wireMainEvents();
+  if("serviceWorker" in navigator){
+    navigator.serviceWorker.register("./sw.js").then(reg=>{
+      reg.update();
+      if(reg.waiting)reg.waiting.postMessage({type:"SKIP_WAITING"});
+      reg.addEventListener("updatefound",()=>{
+        const worker=reg.installing;
+        worker?.addEventListener("statechange",()=>{
+          if(worker.state==="installed" && navigator.serviceWorker.controller){
+            worker.postMessage({type:"SKIP_WAITING"});
           }
-          return response;
-        }
-        return fetch(request).then(networkResponse => {
-          if (networkResponse && networkResponse.ok) {
-            const clone = networkResponse.clone();
-            event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.put(request, clone)));
-          }
-          return networkResponse;
         });
-      })
-      .catch(() => caches.match(request).then(cached => {
-        if (cached) return cached;
-        if (request.mode === "navigate") return caches.match("./index.html");
-        return new Response("Recurso no disponible sin conexión.", { status: 503 });
-      }))
-  );
-});
-
-self.addEventListener("message", event => {
-  if (event.data?.type === "SKIP_WAITING") self.skipWaiting();
-  if (event.data?.type === "CLEAR_CACHE") {
-    event.waitUntil(caches.keys().then(keys => Promise.all(keys.map(key => caches.delete(key)))));
+      });
+    }).catch(err=>console.warn("Service Worker:",err));
   }
 });
+
+Object.assign(window,{startGame,resetRun,exitToHeroSelection,showModal,hideModals});
