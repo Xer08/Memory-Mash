@@ -5,7 +5,29 @@ function startGame(){
 function updateTurnDisplay(){const el=document.getElementById("turn-number");if(el)el.textContent=currentTurn}
 function incrementTurn(){currentTurn++;updateTurnDisplay()}
 function resetRun(){
-  hideModals();resetPlayer();applyHeroStats();initializeDungeon();createEnemy(1);initializeBoard();resetState();currentTurn=1;updateTurnDisplay();setCombatMessage("Nueva partida. Encuentra una pareja.");updateCombatUI()
+  hideModals();
+  resetPlayer();
+  applyHeroStats();
+  initializeDungeon();
+  createEnemy(1);
+  initializeBoard();
+  resetState();
+  currentTurn=1;
+  updateTurnDisplay();
+  setCombatMessage("Nueva partida. Encuentra una pareja.");
+  updateCombatUI();
+}
+function exitToHeroSelection(){
+  hideModals();
+  resetPlayer();
+  resetHero();
+  initializeDungeon();
+  resetState();
+  currentTurn=1;
+  updateTurnDisplay();
+  document.getElementById("game-screen").classList.add("hidden");
+  document.getElementById("hero-screen").classList.remove("hidden");
+  document.getElementById("board").innerHTML="";
 }
 function setupMainEvents(){
   initializeHeroSelection();
@@ -14,7 +36,7 @@ function setupMainEvents(){
   document.getElementById("victory-restart-btn").addEventListener("click",resetRun);
   document.getElementById("quit-btn").addEventListener("click",()=>showModal("confirm-modal"));
   document.getElementById("cancel-quit").addEventListener("click",hideModals);
-  document.getElementById("confirm-quit").addEventListener("click",()=>{hideModals();document.getElementById("game-screen").classList.add("hidden");document.getElementById("hero-screen").classList.remove("hidden");resetHero()});
+  document.getElementById("confirm-quit").addEventListener("click",exitToHeroSelection);
   document.addEventListener("cardMatch",()=>incrementTurn());
   document.addEventListener("stateChange",e=>{if(e.detail.state===GameState.GAME_OVER||e.detail.state===GameState.VICTORY)boardLocked=true});
 }
@@ -29,4 +51,4 @@ function registerServiceWorker(){
   window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").then(r=>{r.update();console.log("SW listo",r.scope)}).catch(console.warn))
 }
 document.addEventListener("DOMContentLoaded",()=>{initJuiciness();setupMainEvents();preventMobileGestures();registerServiceWorker()});
-Object.assign(window,{startGame,resetRun,updateTurnDisplay,incrementTurn});
+Object.assign(window,{startGame,resetRun,exitToHeroSelection,updateTurnDisplay,incrementTurn});

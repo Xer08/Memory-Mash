@@ -1,12 +1,13 @@
 const player={maxHealth:100,currentHealth:100,shield:0,baseAttack:15,ultimateCharge:0,maxUltimateCharge:100,mana:0,maxMana:0};
 const enemy={maxHealth:70,currentHealth:70,attackDamage:10};
 let gameStats={roomsCleared:0,pairsMatched:0,totalDamageDealt:0,totalDamageTaken:0};
+let enemyAttackTimer=null;
 const runeEffects={
   sword:{name:"Espada",damage:15},shield:{name:"Escudo",shield:14},potion:{name:"Poción",healing:18},
   trap:{name:"Trampa",damage:12},ultimate:{name:"Carga Suprema",charge:25}
 };
 function initializeCombat(){resetPlayer();updateCombatUI()}
-function resetPlayer(){Object.assign(player,{maxHealth:100,currentHealth:100,shield:0,baseAttack:15,ultimateCharge:0,maxUltimateCharge:100,mana:0,maxMana:0});gameStats={roomsCleared:0,pairsMatched:0,totalDamageDealt:0,totalDamageTaken:0}}
+function resetPlayer(){if(enemyAttackTimer)clearTimeout(enemyAttackTimer);enemyAttackTimer=null;Object.assign(player,{maxHealth:100,currentHealth:100,shield:0,baseAttack:15,ultimateCharge:0,maxUltimateCharge:100,mana:0,maxMana:0});gameStats={roomsCleared:0,pairsMatched:0,totalDamageDealt:0,totalDamageTaken:0}}
 function createEnemy(room){
   const s=1+(room-1)*.15;enemy.maxHealth=Math.round(70*s);enemy.currentHealth=enemy.maxHealth;enemy.attackDamage=Math.round(10*s);updateCombatUI()
 }
@@ -48,10 +49,24 @@ function takeDamage(amount){
 }
 function chargeUltimate(amount){player.ultimateCharge=Math.min(player.maxUltimateCharge,player.ultimateCharge+amount);playChargeSound();hapticFeedback("ultimate");updateAbilityButton()}
 function enemyAttack(){
-  if(getCurrentState()!==GameState.ENEMY_TURN)return;
-  setTimeout(()=>{if(getCurrentState()!==GameState.ENEMY_TURN)return;takeDamage(enemy.attackDamage);showFloatingText(`-${enemy.attackDamage}`,"enemy",73,35);
-    if(player.currentHealth<=0){setState(GameState.GAME_OVER);showGameOverModal()}else{setState(GameState.PLAYER_TURN_IDLE);setCombatMessage("Tu turno: encuentra una pareja.")}
-  },600)
+  if(getCurrentState()!==GameState.ENEMY_TURN)return false;
+  if(enemyAttackTimer)clearTimeout(enemyAttackTimer);
+  setCombatMessage("El enemigo prepara su ataque…");
+  enemyAttackTimer=setTimeout(()=>{
+    enemyAttackTimer=null;
+    if(getCurrentState()!==GameState.ENEMY_TURN)return;
+    takeDamage(enemy.attackDamage);
+    showFloatingText(`-${enemy.attackDamage}`,"enemy",73,35);
+    if(player.currentHealth<=0){
+      setState(GameState.GAME_OVER);
+      showGameOverModal();
+    }else{
+      setState(GameState.PLAYER_TURN_IDLE);
+      setCombatMessage("Tu turno: encuentra una pareja.");
+    }
+    updateCombatUI();
+  },600);
+  return true;
 }
 function checkCombatEnd(){
   if(enemy.currentHealth<=0){setState(GameState.VICTORY);handleRoomComplete()}
@@ -60,7 +75,8 @@ function checkCombatEnd(){
 function updateCombatUI(){
   const hp=Math.max(0,player.currentHealth/player.maxHealth*100),sh=Math.min(100,player.shield/player.maxHealth*100),eh=Math.max(0,enemy.currentHealth/enemy.maxHealth*100);
   setWidth("player-hp-fill",hp);setWidth("player-shield-fill",sh);setWidth("enemy-hp-fill",eh);setWidth("ultimate-fill",player.ultimateCharge);
-  text("player-hp-text",`${player.currentHealth}/${player.maxHealth}`);text("player-shield-text",player.shield);text("enemy-hp-text",`${enemy.currentHealth}/${enemy.maxHealth}`);text("enemy-attack-text",enemy.attackDamage);text("ultimate-text",`${player.ultimateCharge}%`);
+  text("player-hp-text",`${player.currentHealth}/${player.maxHealth}`);text("player-shield-text",player.shield);text("enemy-hp-text",`${enemy.currentHealth}/${enemy.maxHealth}`);text("enemy-attack-text",enemy.attackDamage);text("ultimate-text",`${player.ultimateCharge}%`);text("mana-text",`${player.mana}/${player.maxMana}`);text("mana-cost-hint",currentHeroClass==="mage"?`Costo: ${heroClasses.mage.abilityCost} MP`:"—");
+  setWidth("mana-fill",player.maxMana?player.mana/player.maxMana*100:0);
   text("pairs-text",`${window.matchedPairs||0}/8 parejas`);text("relics-text",`💎 ${(window.activeRelics||[]).length}`);
   updateAbilityButton()
 }

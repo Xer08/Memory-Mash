@@ -25,7 +25,11 @@ function evaluateMatch(){
     setTimeout(()=>{a.classList.remove("flipped","fail-pop");b.classList.remove("flipped","fail-pop");a.dataset.state=b.dataset.state="hidden";flippedCards=[];boardLocked=false;
       const dodge=typeof checkRogueDodge==="function"&&checkRogueDodge();
       if(dodge){setState(GameState.PLAYER_TURN_IDLE);setCombatMessage("¡Esquiva! Sigue buscando.");}
-      else{setState(GameState.ENEMY_TURN);setCombatMessage("El enemigo ataca…");enemyAttack()}
+      else if(setState(GameState.ENEMY_TURN)){
+        boardLocked=true;
+        setCombatMessage("El enemigo ataca…");
+        enemyAttack();
+      }
     },800)
   }
 }

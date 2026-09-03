@@ -15,9 +15,9 @@ const relicDefinitions={
  battleCharm:{name:"Talismán de Batalla",description:"+3 ataque base permanente.",icon:"🗡️",effect:"attackBonus",value:3}
 };
 function initializeHeroSelection(){document.querySelectorAll(".hero-card").forEach(c=>c.addEventListener("click",()=>selectHero(c.dataset.hero)))}
-function selectHero(hero){if(!heroClasses[hero])return;currentHeroClass=hero;applyHeroStats();document.getElementById("hero-screen").classList.add("hidden");document.getElementById("game-screen").classList.remove("hidden");startGame()}
-function applyHeroStats(){const h=heroClasses[currentHeroClass];player.maxHealth=h.maxHealth;player.currentHealth=h.maxHealth;player.baseAttack=h.attack;player.mana=h.maxMana||0;player.maxMana=h.maxMana||0;activeRelics=[];document.getElementById("player-avatar").textContent=h.icon;document.getElementById("player-name").textContent=h.name;updateHeroAbilityUI()}
-function resetHero(){currentHeroClass=null;activeRelics=[]}
+function selectHero(hero){if(!heroClasses[hero])return;currentHeroClass=hero;window.currentHeroClass=currentHeroClass;applyHeroStats();document.getElementById("hero-screen").classList.add("hidden");document.getElementById("game-screen").classList.remove("hidden");startGame()}
+function applyHeroStats(){const h=heroClasses[currentHeroClass];player.maxHealth=h.maxHealth;player.currentHealth=h.maxHealth;player.baseAttack=h.attack;player.mana=h.maxMana||0;player.maxMana=h.maxMana||0;activeRelics=[];window.activeRelics=activeRelics;window.currentHeroClass=currentHeroClass;document.getElementById("player-avatar").textContent=h.icon;document.getElementById("player-name").textContent=h.name;updateHeroAbilityUI()}
+function resetHero(){currentHeroClass=null;activeRelics=[];window.currentHeroClass=null;window.activeRelics=activeRelics}
 function canUseHeroAbility(){if(currentHeroClass==="mage")return player.mana>=heroClasses.mage.abilityCost&&getCurrentState()===GameState.PLAYER_TURN_IDLE;if(currentHeroClass==="warrior"||currentHeroClass==="rogue")return player.ultimateCharge>=100&&getCurrentState()===GameState.PLAYER_TURN_IDLE;return false}
 function updateHeroAbilityUI(){const h=heroClasses[currentHeroClass||"warrior"],b=document.getElementById("hero-ability-btn");if(!b)return;document.getElementById("ability-icon").textContent=h.abilityIcon;document.getElementById("ability-label").textContent=h.ability;if(currentHeroClass==="mage"){document.getElementById("ability-cost").textContent=`${h.abilityCost} MP`}else{document.getElementById("ability-cost").textContent="100%"}}
 function useHeroAbility(){
@@ -28,6 +28,6 @@ function useHeroAbility(){
   updateCombatUI()
 }
 function checkRogueDodge(){if(currentHeroClass!=="rogue"||Math.random()>=.25)return false;showFloatingText("¡ESQUIVA!","dodge",50,38);hapticFeedback("dodge");setCombatMessage("El Pícaro conserva el turno.");return true}
-function addRelic(key){if(!relicDefinitions[key]||activeRelics.includes(key))return;activeRelics.push(key);const r=relicDefinitions[key];if(r.effect==="maxHealth"){player.maxHealth+=r.value;player.currentHealth+=r.value}if(r.effect==="attackBonus")player.baseAttack+=r.value;showFloatingText(`${r.icon} ${r.name}`,"charge",50,45);updateCombatUI()}
+function addRelic(key){if(!relicDefinitions[key]||activeRelics.includes(key))return;activeRelics.push(key);window.activeRelics=activeRelics;const r=relicDefinitions[key];if(r.effect==="maxHealth"){player.maxHealth+=r.value;player.currentHealth+=r.value}if(r.effect==="attackBonus")player.baseAttack+=r.value;showFloatingText(`${r.icon} ${r.name}`,"charge",50,45);updateCombatUI()}
 function getRandomRelics(n=3){const pool=Object.keys(relicDefinitions).filter(k=>!activeRelics.includes(k));for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}return pool.slice(0,n)}
 Object.assign(window,{currentHeroClass,heroClasses,relicDefinitions,activeRelics,initializeHeroSelection,selectHero,resetHero,canUseHeroAbility,updateHeroAbilityUI,useHeroAbility,checkRogueDodge,addRelic,getRandomRelics});
