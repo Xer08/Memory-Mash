@@ -1,0 +1,366 @@
+/* Visual Effects */
+
+/* Floating Text Animation */
+.floating-text {
+    position: absolute;
+    font-family: var(--font-retro);
+    font-size: 1.5rem;
+    font-weight: bold;
+    pointer-events: none;
+    animation: floatUp 1s ease-out forwards;
+    text-shadow: 0 0 10px currentColor;
+    z-index: 1000;
+}
+
+.floating-text.damage {
+    color: var(--danger-color);
+    text-shadow: 0 0 10px var(--rune-sword-glow);
+}
+
+.floating-text.heal {
+    color: var(--success-color);
+    text-shadow: 0 0 10px var(--rune-potion-glow);
+}
+
+.floating-text.shield {
+    color: var(--shield-color);
+    text-shadow: 0 0 10px var(--rune-shield-glow);
+}
+
+.floating-text.ultimate {
+    color: var(--rune-ultimate);
+    text-shadow: 0 0 10px var(--rune-ultimate-glow);
+}
+
+.floating-text.trap {
+    color: var(--rune-trap);
+    text-shadow: 0 0 10px var(--rune-trap-glow);
+}
+
+.floating-text.enemy-attack {
+    color: var(--enemy-health-color);
+    text-shadow: 0 0 10px rgba(255, 107, 53, 0.8);
+}
+
+.floating-text.dodge {
+    color: var(--rune-ultimate);
+    text-shadow: 0 0 15px var(--rune-ultimate-glow);
+    font-size: 1.8rem;
+}
+
+.floating-text.relic {
+    color: var(--rune-ultimate);
+    text-shadow: 0 0 15px var(--rune-ultimate-glow);
+    font-size: 1.2rem;
+}
+
+@keyframes floatUp {
+    0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-50px) scale(1.2);
+    }
+}
+
+/* Screen Shake Effect */
+.shake {
+    animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes shake {
+    10%, 90% {
+        transform: translate3d(-1px, 0, 0);
+    }
+    20%, 80% {
+        transform: translate3d(2px, 0, 0);
+    }
+    30%, 50%, 70% {
+        transform: translate3d(-4px, 0, 0);
+    }
+    40%, 60% {
+        transform: translate3d(4px, 0, 0);
+    }
+}
+
+/* Glow Pulse Effect for Matched Cards */
+.card.matched {
+    animation: glowPulse 0.6s ease;
+}
+
+@keyframes glowPulse {
+    0% {
+        box-shadow: 0 0 5px currentColor;
+    }
+    50% {
+        box-shadow: 0 0 20px currentColor, 0 0 30px currentColor;
+    }
+    100% {
+        box-shadow: 0 0 5px currentColor;
+    }
+}
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    backdrop-filter: blur(5px);
+}
+
+.modal-overlay.hidden {
+    display: none;
+}
+
+/* Game container visibility */
+#game-container {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-md);
+    position: relative;
+}
+
+#game-container.visible {
+    display: flex;
+}
+
+.modal {
+    background: var(--bg-secondary);
+    border: 2px solid var(--accent-color);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
+    max-width: 90%;
+    width: 400px;
+    text-align: center;
+    box-shadow: 0 0 30px var(--rune-shield-glow);
+    animation: modalFadeIn 0.3s ease;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.modal h2 {
+    color: var(--accent-color);
+    margin-bottom: var(--spacing-md);
+}
+
+/* Room Modal */
+.room-modal .relics-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    margin: var(--spacing-md) 0;
+}
+
+.relic-card {
+    background: var(--bg-tertiary);
+    border: 2px solid var(--bg-secondary);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.relic-card:hover {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 15px var(--rune-shield-glow);
+    transform: translateX(5px);
+}
+
+.relic-card .relic-icon {
+    font-size: 2rem;
+}
+
+.relic-card .relic-info {
+    text-align: left;
+    flex: 1;
+}
+
+.relic-card .relic-name {
+    font-weight: bold;
+    color: var(--accent-color);
+    margin-bottom: var(--spacing-xs);
+}
+
+.relic-card .relic-description {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+/* Game Over Modal */
+.game-over-modal h2 {
+    color: var(--danger-color);
+    text-shadow: 0 0 10px var(--rune-sword-glow);
+}
+
+.stats-summary {
+    margin: var(--spacing-md) 0;
+    text-align: left;
+}
+
+.stats-summary p {
+    margin: var(--spacing-sm) 0;
+    color: var(--text-secondary);
+}
+
+.stats-summary span {
+    color: var(--text-primary);
+    font-weight: bold;
+    float: right;
+}
+
+/* Victory Modal */
+.victory-modal h2 {
+    color: var(--rune-ultimate);
+    text-shadow: 0 0 10px var(--rune-ultimate-glow);
+}
+
+/* Hero Selection Modal */
+.modal-content {
+    background: var(--bg-secondary);
+    border: 2px solid var(--accent-color);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
+    max-width: 90%;
+    width: 400px;
+    text-align: center;
+    box-shadow: 0 0 30px var(--rune-shield-glow);
+    animation: modalFadeIn 0.3s ease;
+}
+
+.hero-modal h2 {
+    text-align: center;
+    margin-bottom: var(--spacing-lg);
+}
+
+.hero-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.hero-card {
+    background: var(--bg-tertiary);
+    border: 2px solid var(--bg-secondary);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-align: center;
+}
+
+.hero-card:hover {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 20px var(--rune-shield-glow);
+    transform: translateY(-3px);
+}
+
+.hero-card .hero-icon {
+    font-size: 3rem;
+    margin-bottom: var(--spacing-sm);
+}
+
+.hero-card h3 {
+    color: var(--accent-color);
+    margin-bottom: var(--spacing-xs);
+}
+
+.hero-card p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* Restart Button */
+.restart-btn {
+    width: 100%;
+    margin-top: var(--spacing-md);
+    background: linear-gradient(135deg, var(--accent-color), #008c94);
+}
+
+/* Ability Button Ready State */
+.hero-ability-btn.ready {
+    animation: abilityPulse 1s infinite;
+}
+
+@keyframes abilityPulse {
+    0%, 100% {
+        box-shadow: 0 0 15px var(--rune-ultimate-glow);
+    }
+    50% {
+        box-shadow: 0 0 25px var(--rune-ultimate-glow), 0 0 35px var(--rune-ultimate-glow);
+    }
+}
+
+/* Temporary Card Reveal */
+.card.temporarily-revealed {
+    animation: tempReveal 1s ease;
+}
+
+@keyframes tempReveal {
+    0% {
+        transform: rotateY(180deg);
+        opacity: 1;
+    }
+    80% {
+        transform: rotateY(180deg);
+        opacity: 1;
+    }
+    100% {
+        transform: rotateY(180deg);
+        opacity: 0.5;
+    }
+}
+
+/* Responsive Design for Modals */
+@media (max-width: 380px) {
+    .modal {
+        padding: var(--spacing-md);
+        width: 95%;
+    }
+    
+    .hero-container {
+        gap: var(--spacing-sm);
+    }
+    
+    .hero-card {
+        padding: var(--spacing-sm);
+    }
+    
+    .hero-card .hero-icon {
+        font-size: 2rem;
+    }
+    
+    .relic-card {
+        padding: var(--spacing-sm);
+    }
+    
+    .relic-card .relic-icon {
+        font-size: 1.5rem;
+    }
+}
