@@ -70,10 +70,12 @@ function enemyAttack(){
     showFloatingText(`-${damage}`,"enemy",73,35);
     if(player.currentHealth<=0){
       setState(GameState.GAME_OVER);
+      boardLocked=true;
       boardInputLock(true);
       showGameOverModal();
     }else{
       setState(GameState.PLAYER_TURN_IDLE);
+      boardLocked=false;
       boardInputLock(false);
       setCombatMessage("⚔️ Tu turno: encuentra una pareja.");
     }

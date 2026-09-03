@@ -29,7 +29,11 @@ function evaluateMatch(){
         boardLocked=false;
         setCombatMessage("¡Esquiva! Sigue buscando.");
       }else{
-        boardLocked=true;
+        // enemyAttack() controla el bloqueo visual durante el turno enemigo.
+        // No dejamos el bloqueo local del tablero activado, porque ese bloqueo
+        // impediría todas las jugadas del siguiente turno aunque el estado
+        // global ya haya vuelto a PLAYER_TURN_IDLE.
+        boardLocked=false;
         if(setState(GameState.ENEMY_TURN)){
           setCombatMessage("👹 El enemigo ataca…");
           enemyAttack();
