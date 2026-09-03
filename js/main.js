@@ -1,90 +1,89 @@
-let enemyAttackTimer=null;
-let runStarted=false;
+let currentTurn=1;
+let previewTimer=null;
 
 function startGame(){
-  runStarted=true;
-  if(typeof initAudio==='function')initAudio();
-  if(typeof initJuiciness==='function')initJuiciness();
-  if(typeof initializeCombat==='function')initializeCombat();
-  if(typeof initializeDungeon==='function')initializeDungeon();
-  if(typeof createEnemy==='function')createEnemy(1);
-  if(typeof initializeBoard==='function')initializeBoard(true);
-  if(typeof resetState==='function')resetState();
-  if(typeof setCombatMessage==='function')setCombatMessage("Memoriza las runas…");
-  updateRoomDisplaySafe();
-  if(typeof updateCombatUI==='function')updateCombatUI();
+  if(previewTimer){clearTimeout(previewTimer);previewTimer=null}
+  initializeDungeon();
+  createEnemy(1);
+  initializeBoard();
+  resetState();
+  currentTurn=1;
+  updateTurnDisplay();
+  startBoardPreview();
+  updateCombatUI();
 }
 
-function resetRun(){
-  if(typeof resetPlayer==='function')resetPlayer();
-  if(typeof applyHeroStats==='function')applyHeroStats();
-  if(typeof initializeDungeon==='function')initializeDungeon();
-  if(typeof createEnemy==='function')createEnemy(1);
-  if(typeof initializeBoard==='function')initializeBoard(true);
-  if(typeof resetState==='function')resetState();
-  if(typeof updateCombatUI==='function')updateCombatUI();
-}
-
-function exitToHeroSelection(){
-  if(typeof resetPlayer==='function')resetPlayer();
-  if(typeof resetHero==='function')resetHero();
-  if(typeof initializeDungeon==='function')initializeDungeon();
-  if(typeof resetState==='function')resetState();
-  runStarted=false;
-  document.getElementById("game-screen")?.classList.add("hidden");
-  document.getElementById("hero-screen")?.classList.remove("hidden");
-}
-
-function updateRoomDisplaySafe(){
-  if(typeof updateRoomDisplay==='function')updateRoomDisplay();
-}
-
-function showModal(id){
-  document.querySelectorAll(".modal-overlay").forEach(m=>m.classList.add("hidden"));
-  const modal=document.getElementById(id);
-  if(modal)modal.classList.remove("hidden");
-}
-function hideModals(){document.querySelectorAll(".modal-overlay").forEach(m=>m.classList.add("hidden"));}
-
-function wireMainEvents(){
-  if(typeof initializeHeroSelection==='function')initializeHeroSelection();
-
-  const ability=document.getElementById("hero-ability-btn");
-  ability?.addEventListener("click",()=>useHeroAbility());
-
-  document.getElementById("restart-btn")?.addEventListener("click",()=>{hideModals();resetRun();});
-  document.getElementById("victory-restart-btn")?.addEventListener("click",()=>{hideModals();resetRun();});
-  document.getElementById("quit-btn")?.addEventListener("click",()=>showModal("quit-modal"));
-  document.getElementById("cancel-quit-btn")?.addEventListener("click",hideModals);
-  document.getElementById("confirm-quit-btn")?.addEventListener("click",()=>{hideModals();exitToHeroSelection();});
-
-  document.addEventListener("click",e=>{
-    const relic=e.target.closest(".relic-card");
-    if(relic && typeof chooseRelic==='function')chooseRelic(relic.dataset.relic);
+function startBoardPreview(){
+  const board=document.getElementById("board");
+  if(!board)return;
+  boardLocked=true;
+  board.classList.add("memory-preview");
+  document.querySelectorAll("#board .card").forEach(card=>{
+    card.classList.add("flipped");
+    card.dataset.state="preview";
   });
-
-  // Evita zoom/scroll accidental en móvil, pero conserva el tap normal de botones.
-  document.addEventListener("gesturestart",e=>e.preventDefault(),{passive:false});
-  document.addEventListener("gesturechange",e=>e.preventDefault(),{passive:false});
-  document.addEventListener("gestureend",e=>e.preventDefault(),{passive:false});
+  setCombatMessage("🧠 Memoriza las runas…");
+  previewTimer=setTimeout(()=>{
+    document.querySelectorAll("#board .card").forEach(card=>{
+      card.classList.remove("flipped");
+      card.dataset.state="hidden";
+    });
+    board.classList.remove("memory-preview");
+    boardLocked=false;
+    previewTimer=null;
+    setCombatMessage("¡Tu turno! Encuentra una pareja.");
+  },500);
 }
 
-document.addEventListener("DOMContentLoaded",()=>{
-  wireMainEvents();
-  if("serviceWorker" in navigator){
-    navigator.serviceWorker.register("./sw.js").then(reg=>{
-      reg.update();
-      if(reg.waiting)reg.waiting.postMessage({type:"SKIP_WAITING"});
-      reg.addEventListener("updatefound",()=>{
-        const worker=reg.installing;
-        worker?.addEventListener("statechange",()=>{
-          if(worker.state==="installed" && navigator.serviceWorker.controller){
-            worker.postMessage({type:"SKIP_WAITING"});
-          }
-        });
-      });
-    }).catch(err=>console.warn("Service Worker:",err));
-  }
-});
-
-Object.assign(window,{startGame,resetRun,exitToHeroSelection,showModal,hideModals});
+function updateTurnDisplay(){const el=document.getElementById("turn-number");if(el)el.textContent=currentTurn}
+function incrementTurn(){currentTurn++;updateTurnDisplay()}
+function resetRun(){
+  hideModals();
+  resetPlayer();
+  applyHeroStats();
+  initializeDungeon();
+  createEnemy(1);
+  initializeBoard();
+  resetState();
+  currentTurn=1;
+  updateTurnDisplay();
+  startBoardPreview();
+  updateCombatUI();
+}
+function exitToHeroSelection(){
+  if(previewTimer){clearTimeout(previewTimer);previewTimer=null}
+  hideModals();
+  resetPlayer();
+  resetHero();
+  initializeDungeon();
+  resetState();
+  currentTurn=1;
+  updateTurnDisplay();
+  document.getElementById("game-screen").classList.add("hidden");
+  document.getElementById("hero-screen").classList.remove("hidden");
+  document.getElementById("board").innerHTML="";
+  boardLocked=false;
+}
+function setupMainEvents(){
+  initializeHeroSelection();
+  document.getElementById("hero-ability-btn").addEventListener("click",useHeroAbility);
+  document.getElementById("restart-btn").addEventListener("click",resetRun);
+  document.getElementById("victory-restart-btn").addEventListener("click",resetRun);
+  document.getElementById("quit-btn").addEventListener("click",()=>showModal("confirm-modal"));
+  document.getElementById("cancel-quit").addEventListener("click",hideModals);
+  document.getElementById("confirm-quit").addEventListener("click",exitToHeroSelection);
+  document.addEventListener("cardMatch",()=>incrementTurn());
+  document.addEventListener("stateChange",e=>{if(e.detail.state===GameState.GAME_OVER||e.detail.state===GameState.VICTORY)boardLocked=true});
+}
+function preventMobileGestures(){
+  document.addEventListener("contextmenu",e=>{if(e.target.closest("#board"))e.preventDefault()});
+  document.addEventListener("touchmove",e=>{if(e.target.closest("#board"))e.preventDefault()},{passive:false});
+  document.addEventListener("gesturestart",e=>e.preventDefault());
+  document.addEventListener("dblclick",e=>e.preventDefault());
+}
+function registerServiceWorker(){
+  if(!("serviceWorker"in navigator))return;
+  window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").then(r=>{r.update();console.log("SW listo",r.scope)}).catch(console.warn))
+}
+document.addEventListener("DOMContentLoaded",()=>{initJuiciness();setupMainEvents();preventMobileGestures();registerServiceWorker()});
+Object.assign(window,{startGame,resetRun,exitToHeroSelection,updateTurnDisplay,incrementTurn,startBoardPreview});
